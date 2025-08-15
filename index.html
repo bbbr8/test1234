@@ -48,6 +48,7 @@
     </header>
 
     <main>
+      <div id="stepIndicator" style="margin-bottom:16px;font-weight:600;text-align:center"></div>
       <!-- LOGIN -->
       <section id="login" class="card" aria-labelledby="h-login">
         <h1 id="h-login">Login</h1>
@@ -70,25 +71,52 @@
       <section id="profile" class="card hidden" aria-labelledby="h-profile">
         <h1 id="h-profile">Profile Setup</h1>
         <form id="profileForm">
-          <div class="row">
-            <div>
-              <label for="firstName">First Name</label>
-              <input id="firstName" name="firstName" required />
+          <fieldset>
+            <legend>Personal Information</legend>
+            <div class="row">
+              <div>
+                <label for="firstName">First Name</label>
+                <input id="firstName" name="firstName" required autocomplete="given-name" />
+              </div>
+              <div>
+                <label for="lastName">Last Name</label>
+                <input id="lastName" name="lastName" required autocomplete="family-name" />
+              </div>
             </div>
-            <div>
-              <label for="lastName">Last Name</label>
-              <input id="lastName" name="lastName" required />
-            </div>
-          </div>
-          <label for="caseName">Case Name</label>
-          <input id="caseName" name="caseName" placeholder="e.g., Jones v. Suited Homes" />
+            <label for="photo">Profile Photo (optional)</label>
+            <input id="photo" name="photo" type="file" accept="image/*" />
+            <img id="photoPreview" alt="Profile photo preview" style="max-width:80px;margin-top:8px;display:none;border-radius:50%" />
+          </fieldset>
 
-          <label for="role">Role</label>
-          <select id="role" name="role">
-            <option value="">— Select —</option>
-            <option value="Plaintiff">Plaintiff</option>
-            <option value="Defendant">Defendant</option>
-          </select>
+          <fieldset>
+            <legend>Contact</legend>
+            <label for="email">Email</label>
+            <input id="email" name="email" type="email" required autocomplete="email" />
+            <label for="phone">Phone</label>
+            <input id="phone" name="phone" type="tel" required autocomplete="tel" />
+            <label for="address">Address</label>
+            <input id="address" name="address" required autocomplete="street-address" />
+          </fieldset>
+
+          <fieldset>
+            <legend>Organization</legend>
+            <label for="organization">Organization/Firm Name</label>
+            <input id="organization" name="organization" required autocomplete="organization" />
+            <label for="primaryAttorney">Primary Attorney</label>
+            <input id="primaryAttorney" name="primaryAttorney" required autocomplete="name" />
+          </fieldset>
+
+          <fieldset>
+            <legend>Case</legend>
+            <label for="caseName">Case Name</label>
+            <input id="caseName" name="caseName" placeholder="e.g., Jones v. Suited Homes" autocomplete="off" />
+            <label for="role">Role</label>
+            <select id="role" name="role">
+              <option value="">— Select —</option>
+              <option value="Plaintiff">Plaintiff</option>
+              <option value="Defendant">Defendant</option>
+            </select>
+          </fieldset>
 
           <div class="actions">
             <button type="button" class="btn-ghost" id="backToLogin">Back</button>
@@ -139,7 +167,10 @@
       <section id="dashboard" class="card hidden" aria-labelledby="h-dashboard">
         <div class="topbar">
           <h1 id="h-dashboard">Briefly Dashboard</h1>
-          <button class="btn-ghost" id="signOutBtn">Sign Out</button>
+          <div style="display:flex;gap:var(--gap);">
+            <button type="button" class="btn-ghost" id="editProfileBtn">Edit Profile</button>
+            <button class="btn-ghost" id="signOutBtn">Sign Out</button>
+          </div>
         </div>
 
         <div class="summary">
@@ -183,6 +214,12 @@
       {id:'b3', title:'Budget 3', total:500000}
     ];
     const screens = ["login","profile","account","dashboard"];
+    const stepText = {
+      login: "Step 0 of 3 — Login",
+      profile: "Step 1 of 3 — Profile Setup",
+      account: "Step 2 of 3 — Account Details",
+      dashboard: "Step 3 of 3 — Dashboard"
+    };
 
     const getJSON = (k, def=null) => { try { return JSON.parse(localStorage.getItem(k) ?? "null") ?? def; } catch { return def; } };
     const setJSON = (k, v) => localStorage.setItem(k, JSON.stringify(v));
@@ -237,6 +274,24 @@
       return el.querySelector('input, select, button, textarea, [tabindex]:not([tabindex="-1"])');
     }
 
+    function prefillProfile(){
+      const data = getJSON(K_PROFILE, {});
+      ["firstName","lastName","email","phone","address","organization","primaryAttorney","caseName","role"].forEach(id=>{
+        const el = document.getElementById(id);
+        if (el) el.value = data[id] || "";
+      });
+      const photoPreview = document.getElementById("photoPreview");
+      if (photoPreview){
+        if (data.photo){
+          photoPreview.src = data.photo;
+          photoPreview.style.display = "block";
+        } else {
+          photoPreview.style.display = "none";
+          photoPreview.removeAttribute("src");
+        }
+      }
+    }
+
     function showScreen(name){
       screens.forEach(id=>{
         const el = document.getElementById(id);
@@ -247,6 +302,9 @@
       const focusTarget = firstFocusable(document.getElementById(name));
       focusTarget && focusTarget.focus({preventScroll:true});
       location.hash = `#${name}`;
+      const ind = document.getElementById("stepIndicator");
+      if (ind) ind.textContent = stepText[name] || "";
+      if (name === "profile") prefillProfile();
     }
 
       function renderCards(){
@@ -258,6 +316,8 @@
         cards.forEach(card=>{
           const cardEl = document.createElement("div");
           cardEl.className = "card";
+          cardEl.draggable = true;
+          cardEl.dataset.id = card.id;
 
           const header = document.createElement("div");
           header.style.display = "flex";
@@ -401,8 +461,9 @@
       docs.forEach(d=>{
         const tr = document.createElement("tr");
         const added = new Date(d.addedAt||Date.now()).toLocaleString();
+        const icon = fileIcon(d.name);
         tr.innerHTML = `
-          <td>${d.name}</td>
+          <td>${icon} ${d.displayName || d.name}</td>
           <td>${Math.max(1, Math.round((d.size||0)/1024))}</td>
           <td>${d.type || "—"}</td>
           <td>${d.category || "Case Document"}</td>
@@ -417,28 +478,78 @@
     document.getElementById("loginNext").addEventListener("click", ()=> showScreen("profile"));
     document.getElementById("backToLogin").addEventListener("click", ()=> showScreen("login"));
 
-    document.getElementById("profileForm").addEventListener("submit",(e)=>{
+    document.getElementById("profileForm").addEventListener("submit", async (e)=>{
       e.preventDefault();
-      const data = Object.fromEntries(new FormData(e.target).entries());
+      const fd = new FormData(e.target);
+      const data = Object.fromEntries(fd.entries());
+      const file = fd.get("photo");
+      if (file && file.size){
+        data.photo = await new Promise(res=>{
+          const reader = new FileReader();
+          reader.onload = ev=>res(ev.target.result);
+          reader.readAsDataURL(file);
+        });
+      } else {
+        const existing = getJSON(K_PROFILE, {});
+        if (existing.photo) data.photo = existing.photo;
+      }
       setJSON(K_PROFILE, data);
       document.getElementById("profileMsg").textContent = "Profile saved.";
-      // prefill account role
       const accRole = document.getElementById("accountRole");
       if (accRole && data.role) accRole.value = data.role;
-      showScreen("account");
+      const hasAccount = !!getJSON(K_ACCOUNT);
+      if (hasAccount) { showScreen("dashboard"); renderDashboard(); }
+      else showScreen("account");
+    });
+
+    document.getElementById("photo").addEventListener("change", e=>{
+      const file = e.target.files[0];
+      const preview = document.getElementById("photoPreview");
+      if (file){
+        const reader = new FileReader();
+        reader.onload = ev=>{ preview.src = ev.target.result; preview.style.display = "block"; };
+        reader.readAsDataURL(file);
+      } else {
+        preview.style.display = "none";
+        preview.removeAttribute("src");
+      }
     });
 
     // ---------- account + docs ----------
     let docs = getJSON(K_DOCS, []);
     const docsInput = document.getElementById("documents");
     const docsTableBody = document.querySelector("#docsTable tbody");
+    const accountSection = document.getElementById("account");
+
+    function fileIcon(name){
+      const ext = (name.split('.').pop()||"").toLowerCase();
+      const map = {pdf:'📕',doc:'📄',docx:'📄',txt:'📃',png:'🖼️',jpg:'🖼️',jpeg:'🖼️'};
+      return map[ext]||'📁';
+    }
+
+    function addFiles(files){
+      files.forEach(f=>{
+        docs.push({
+          id: (crypto?.randomUUID?.() || String(Date.now()+Math.random())),
+          name: f.name,
+          displayName: f.name,
+          size: f.size,
+          type: f.type,
+          category: "Case Document",
+          addedAt: Date.now()
+        });
+      });
+      setJSON(K_DOCS, docs);
+      renderDocsTable();
+    }
 
     function renderDocsTable(){
       docsTableBody.innerHTML = "";
       docs.forEach((d,i)=>{
         const tr = document.createElement("tr");
+        const icon = fileIcon(d.name);
         tr.innerHTML = `
-          <td>${d.name}</td>
+          <td>${icon} <input type="text" value="${d.displayName||d.name}" data-name-idx="${i}" style="width:100%" /></td>
           <td>${Math.max(1,Math.round(d.size/1024))}</td>
           <td>${d.type || "—"}</td>
           <td>
@@ -457,16 +568,23 @@
 
     docsInput.addEventListener("change",(e)=>{
       const files = Array.from(e.target.files || []);
-      files.forEach(f=>{
-        docs.push({
-          id: (crypto?.randomUUID?.() || String(Date.now()+Math.random())),
-          name: f.name, size: f.size, type: f.type,
-          category: "Case Document", addedAt: Date.now()
-        });
-      });
-      setJSON(K_DOCS, docs);
-      renderDocsTable();
+      addFiles(files);
       docsInput.value = "";
+    });
+
+    accountSection.addEventListener("dragover",(e)=>{e.preventDefault();});
+    accountSection.addEventListener("drop",(e)=>{
+      e.preventDefault();
+      const files = Array.from(e.dataTransfer.files || []);
+      addFiles(files);
+    });
+
+    document.getElementById("docsTable").addEventListener("input",(e)=>{
+      const idx = e.target.dataset.nameIdx;
+      if (idx!==undefined) {
+        docs[idx].displayName = e.target.value;
+        setJSON(K_DOCS, docs);
+      }
     });
 
     document.getElementById("docsTable").addEventListener("change",(e)=>{
@@ -532,7 +650,32 @@
       docs = [];
       showScreen("login");
     });
-    document.getElementById("manageDocsBtn").addEventListener("click", ()=> showScreen("account"));
+      document.getElementById("manageDocsBtn").addEventListener("click", ()=> showScreen("account"));
+      document.getElementById("editProfileBtn").addEventListener("click", ()=> showScreen("profile"));
+
+      const cardListEl = document.getElementById("cardList");
+      let dragCardId = null;
+      cardListEl.addEventListener("dragstart", e=>{
+        const card = e.target.closest(".card");
+        if (!card) return;
+        dragCardId = card.dataset.id;
+      });
+      cardListEl.addEventListener("dragover", e=>e.preventDefault());
+      cardListEl.addEventListener("drop", e=>{
+        e.preventDefault();
+        const target = e.target.closest(".card");
+        if (!target || dragCardId===null) return;
+        const cards = loadCards();
+        const from = cards.findIndex(c=>c.id===dragCardId);
+        const to = cards.findIndex(c=>c.id===target.dataset.id);
+        if (from>=0 && to>=0 && from!==to){
+          const [m] = cards.splice(from,1);
+          cards.splice(to,0,m);
+          saveCards(cards);
+          renderCards();
+        }
+        dragCardId = null;
+      });
 
     // ---------- initial route ----------
     (function init(){
