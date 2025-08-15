@@ -39,12 +39,16 @@
     <h1>Profile Setup</h1>
     <form>
       <div class="form-group">
-        <label for="first-name">First Name</label>
-        <input id="first-name" type="text" />
+        <label for="profile-name">Name</label>
+        <input id="profile-name" type="text" />
       </div>
       <div class="form-group">
-        <label for="last-name">Last Name</label>
-        <input id="last-name" type="text" />
+        <label for="profile-case">Case</label>
+        <input id="profile-case" type="text" />
+      </div>
+      <div class="form-group">
+        <label for="profile-role">Role</label>
+        <input id="profile-role" type="text" />
       </div>
       <div class="button-group">
         <button type="button" class="btn btn-secondary" onclick="goToLogin()">Back</button>
@@ -53,16 +57,37 @@
     </form>
   </div>
 
+  <div id="dashboard-screen" class="hidden">
+    <h1>Dashboard</h1>
+  </div>
+
   <script>
+    function showScreen(screen) {
+      const screens = ['login', 'profile', 'dashboard'];
+      screens.forEach((name) => {
+        document.getElementById(`${name}-screen`).classList.add('hidden');
+      });
+      document.getElementById(`${screen}-screen`).classList.remove('hidden');
+    }
+
     function goToProfileSetup() {
-      document.getElementById('login-screen').classList.add('hidden');
-      document.getElementById('profile-screen').classList.remove('hidden');
+      showScreen('profile');
     }
 
     function goToLogin() {
-      document.getElementById('profile-screen').classList.add('hidden');
-      document.getElementById('login-screen').classList.remove('hidden');
+      showScreen('login');
     }
+
+    document.querySelector('#profile-screen form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const profile = {
+        name: document.getElementById('profile-name').value,
+        case: document.getElementById('profile-case').value,
+        role: document.getElementById('profile-role').value,
+      };
+      localStorage.setItem('briefly_profile', JSON.stringify(profile));
+      showScreen('dashboard');
+    });
   </script>
 </body>
 </html>
