@@ -118,17 +118,26 @@
   <script>
     let docs = [];
 
-    function showScreen(screen) {
-      ['login', 'profile', 'account', 'dashboard'].forEach(function (id) {
-        document.getElementById(id).style.display = id === screen ? 'block' : 'none';
-      });
-      if (screen === 'profile') {
-        loadProfile();
+      function showScreen(screen) {
+        ['login', 'profile', 'account', 'dashboard'].forEach(function (id) {
+          document.getElementById(id).style.display = id === screen ? 'block' : 'none';
+        });
+        const section = document.getElementById(screen);
+        const heading = section.querySelector('h1');
+        if (heading) {
+          document.title = heading.textContent;
+        }
+        const input = section.querySelector('input');
+        if (input) {
+          input.focus();
+        }
+        if (screen === 'profile') {
+          loadProfile();
+        }
+        if (screen === 'account') {
+          loadAccount();
+        }
       }
-      if (screen === 'account') {
-        loadAccount();
-      }
-    }
 
     function loadProfile() {
       const data = JSON.parse(localStorage.getItem('briefly_profile') || '{}');
