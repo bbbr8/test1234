@@ -67,6 +67,15 @@
         </div>
       </section>
 
+      <!-- CASE SELECTION -->
+      <section id="cases" class="card hidden" aria-labelledby="h-cases">
+        <h1 id="h-cases">Select Case</h1>
+        <div id="caseList" style="display:flex;flex-direction:column;gap:var(--gap);"></div>
+        <div class="actions">
+          <button type="button" id="newCaseBtn">New Case</button>
+        </div>
+      </section>
+
       <!-- PROFILE -->
       <section id="profile" class="card hidden" aria-labelledby="h-profile">
         <h1 id="h-profile">Profile Setup</h1>
@@ -168,6 +177,7 @@
         <div class="topbar">
           <h1 id="h-dashboard">Briefly Dashboard</h1>
           <div style="display:flex;gap:var(--gap);">
+            <button type="button" class="btn-ghost" id="switchCaseBtn">Switch Case</button>
             <button type="button" class="btn-ghost" id="editProfileBtn">Edit Profile</button>
             <button class="btn-ghost" id="signOutBtn">Sign Out</button>
           </div>
@@ -215,21 +225,26 @@
 
   <script>
     // ---------- helpers ----------
-    const K_PROFILE = "briefly:v1:profile";
-    const K_ACCOUNT = "briefly:v1:account";
-    const K_DOCS    = "briefly:v1:docs";
-    const K_CARDS   = "briefly:v1:cards";
+    const K_CASES = "briefly:v1:cases";
+    const K_ACTIVE = "briefly:v1:activeCase";
+    const caseKey = (id, part) => `briefly:v1:case:${id}:${part}`;
+    const K_PROFILE = id => caseKey(id, "profile");
+    const K_ACCOUNT = id => caseKey(id, "account");
+    const K_DOCS    = id => caseKey(id, "docs");
+    const K_CARDS   = id => caseKey(id, "cards");
+    let activeCaseId = null;
     const DEFAULT_CARDS = [
       {id:'repc', title:'REPC / Contract', total:792254},
       {id:'b2', title:'Budget 2', total:650000},
       {id:'b3', title:'Budget 3', total:500000}
     ];
-    const screens = ["login","profile","account","dashboard"];
+    const screens = ["login","cases","profile","account","dashboard"];
     const stepText = {
-      login: "Step 0 of 3 — Login",
-      profile: "Step 1 of 3 — Profile Setup",
-      account: "Step 2 of 3 — Account Details",
-      dashboard: "Step 3 of 3 — Dashboard"
+      login: "Step 0 of 4 — Login",
+      cases: "Step 1 of 4 — Select Case",
+      profile: "Step 2 of 4 — Profile Setup",
+      account: "Step 3 of 4 — Account Details",
+      dashboard: "Step 4 of 4 — Dashboard"
     };
 
     const getJSON = (k, def=null) => { try { return JSON.parse(localStorage.getItem(k) ?? "null") ?? def; } catch { return def; } };
@@ -237,7 +252,7 @@
     const del = (k) => localStorage.removeItem(k);
 
       const loadCards = () => {
-        const stored = getJSON(K_CARDS);
+        const stored = getJSON(K_CARDS(activeCaseId));
         const toggleBase = {
           construction:false,
           contingency:false,
@@ -279,14 +294,14 @@
           amounts:{...amountBase, ...(c.amounts||{})}
         }));
       };
-    const saveCards = (cards) => setJSON(K_CARDS, cards);
+    const saveCards = (cards) => setJSON(K_CARDS(activeCaseId), cards);
 
     function firstFocusable(el){
       return el.querySelector('input, select, button, textarea, [tabindex]:not([tabindex="-1"])');
     }
 
     function prefillProfile(){
-      const data = getJSON(K_PROFILE, {});
+      const data = getJSON(K_PROFILE(activeCaseId), {});
       ["firstName","lastName","email","phone","address","organization","primaryAttorney","caseName","role"].forEach(id=>{
         const el = document.getElementById(id);
         if (el) el.value = data[id] || "";
@@ -316,6 +331,37 @@
       const ind = document.getElementById("stepIndicator");
       if (ind) ind.textContent = stepText[name] || "";
       if (name === "profile") prefillProfile();
+    }
+
+    function renderCases(){
+      const list = document.getElementById("caseList");
+      if (!list) return;
+      const cases = getJSON(K_CASES, []);
+      list.innerHTML = "";
+      cases.forEach(c=>{
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.textContent = c.name || "Untitled Case";
+        btn.addEventListener("click", ()=> selectCase(c.id));
+        list.appendChild(btn);
+      });
+      if (!cases.length){
+        const p = document.createElement("p");
+        p.textContent = "No cases yet.";
+        list.appendChild(p);
+      }
+    }
+
+    function selectCase(id){
+      activeCaseId = id;
+      localStorage.setItem(K_ACTIVE, id);
+      docs = getJSON(K_DOCS(id), []);
+      renderDocsTable();
+      const hasProfile = !!getJSON(K_PROFILE(id));
+      const hasAccount = !!getJSON(K_ACCOUNT(id));
+      if (!hasProfile) showScreen("profile");
+      else if (!hasAccount) showScreen("account");
+      else { showScreen("dashboard"); renderDashboard(); }
     }
 
       function renderCards(){
@@ -457,8 +503,8 @@
       }
 
     function renderDashboard(){
-      const p = getJSON(K_PROFILE, {});
-      const a = getJSON(K_ACCOUNT, {});
+      const p = getJSON(K_PROFILE(activeCaseId), {});
+      const a = getJSON(K_ACCOUNT(activeCaseId), {});
       document.getElementById("sumName").textContent = [p.firstName, p.lastName].filter(Boolean).join(" ") || "—";
       document.getElementById("sumCase").textContent = p.caseName || "—";
       document.getElementById("sumRole").textContent = p.role || "—";
@@ -479,7 +525,7 @@
         a.caseNumber ? `Case #${a.caseNumber} — ${a.role || "—"}` : "—";
 
       // docs table on dashboard
-      const docs = getJSON(K_DOCS, []);
+      const docs = getJSON(K_DOCS(activeCaseId), []);
       const tbody = document.querySelector("#docsList tbody");
       tbody.innerHTML = "";
       docs.forEach(d=>{
@@ -499,8 +545,15 @@
     }
 
     // ---------- login/profile wiring ----------
-    document.getElementById("loginNext").addEventListener("click", ()=> showScreen("profile"));
-    document.getElementById("backToLogin").addEventListener("click", ()=> showScreen("login"));
+    document.getElementById("loginNext").addEventListener("click", ()=> { showScreen("cases"); renderCases(); });
+    document.getElementById("backToLogin").addEventListener("click", ()=> { showScreen("cases"); renderCases(); });
+    document.getElementById("newCaseBtn").addEventListener("click", ()=>{
+      const cases = getJSON(K_CASES, []);
+      const id = Date.now().toString();
+      cases.push({id, name:`Case ${cases.length+1}`});
+      setJSON(K_CASES, cases);
+      selectCase(id);
+    });
 
     document.getElementById("profileForm").addEventListener("submit", async (e)=>{
       e.preventDefault();
@@ -514,14 +567,17 @@
           reader.readAsDataURL(file);
         });
       } else {
-        const existing = getJSON(K_PROFILE, {});
+        const existing = getJSON(K_PROFILE(activeCaseId), {});
         if (existing.photo) data.photo = existing.photo;
       }
-      setJSON(K_PROFILE, data);
+      setJSON(K_PROFILE(activeCaseId), data);
+      const cases = getJSON(K_CASES, []);
+      const idx = cases.findIndex(c=>c.id===activeCaseId);
+      if (idx>=0) { cases[idx].name = data.caseName || cases[idx].name || "Untitled Case"; setJSON(K_CASES, cases); }
       document.getElementById("profileMsg").textContent = "Profile saved.";
       const accRole = document.getElementById("accountRole");
       if (accRole && data.role) accRole.value = data.role;
-      const hasAccount = !!getJSON(K_ACCOUNT);
+      const hasAccount = !!getJSON(K_ACCOUNT(activeCaseId));
       if (hasAccount) { showScreen("dashboard"); renderDashboard(); }
       else showScreen("account");
     });
@@ -540,7 +596,7 @@
     });
 
     // ---------- account + docs ----------
-    let docs = getJSON(K_DOCS, []);
+    let docs = [];
     const docsInput = document.getElementById("documents");
     const docsTableBody = document.querySelector("#docsTable tbody");
     const accountSection = document.getElementById("account");
@@ -563,7 +619,7 @@
           addedAt: Date.now()
         });
       });
-      setJSON(K_DOCS, docs);
+      setJSON(K_DOCS(activeCaseId), docs);
       renderDocsTable();
     }
 
@@ -607,7 +663,7 @@
       const idx = e.target.dataset.nameIdx;
       if (idx!==undefined) {
         docs[idx].displayName = e.target.value;
-        setJSON(K_DOCS, docs);
+        setJSON(K_DOCS(activeCaseId), docs);
       }
     });
 
@@ -616,7 +672,7 @@
       const i = Number(e.target.dataset.idx);
       if (!Number.isNaN(i) && docs[i]) {
         docs[i].category = e.target.value;
-        setJSON(K_DOCS, docs);
+        setJSON(K_DOCS(activeCaseId), docs);
       }
     });
 
@@ -624,7 +680,7 @@
       if (!e.target.dataset.rm) return;
       const i = Number(e.target.dataset.rm);
       docs.splice(i,1);
-      setJSON(K_DOCS, docs);
+      setJSON(K_DOCS(activeCaseId), docs);
       renderDocsTable();
     });
 
@@ -633,8 +689,8 @@
     document.getElementById("saveAccountBtn").addEventListener("click", ()=>{
       const caseNumber = document.getElementById("caseNumber").value.trim();
       const role = document.getElementById("accountRole").value;
-      setJSON(K_ACCOUNT, { caseNumber, role });
-      setJSON(K_DOCS, docs); // ensure persisted
+      setJSON(K_ACCOUNT(activeCaseId), { caseNumber, role });
+      setJSON(K_DOCS(activeCaseId), docs); // ensure persisted
       showScreen("dashboard");
       renderDashboard();
     });
@@ -670,12 +726,14 @@
       renderCards();
     });
     document.getElementById("signOutBtn").addEventListener("click", ()=>{
-      [K_PROFILE, K_ACCOUNT, K_DOCS].forEach(del);
+      activeCaseId = null;
+      localStorage.removeItem(K_ACTIVE);
       docs = [];
       showScreen("login");
     });
-      document.getElementById("manageDocsBtn").addEventListener("click", ()=> showScreen("account"));
-      document.getElementById("editProfileBtn").addEventListener("click", ()=> showScreen("profile"));
+    document.getElementById("switchCaseBtn").addEventListener("click", ()=>{ showScreen("cases"); renderCases(); });
+    document.getElementById("manageDocsBtn").addEventListener("click", ()=> showScreen("account"));
+    document.getElementById("editProfileBtn").addEventListener("click", ()=> showScreen("profile"));
 
       const cardListEl = document.getElementById("cardList");
       let dragCardId = null;
@@ -703,17 +761,21 @@
 
     // ---------- initial route ----------
     (function init(){
-      // set account role default from profile if exists
-      const p = getJSON(K_PROFILE);
-      if (p?.role) { const r = document.getElementById("accountRole"); if (r) r.value = p.role; }
-      docs = getJSON(K_DOCS, []);
-      renderDocsTable();
+      activeCaseId = localStorage.getItem(K_ACTIVE);
+      if (activeCaseId){
+        const p = getJSON(K_PROFILE(activeCaseId), {});
+        if (p?.role) { const r = document.getElementById("accountRole"); if (r) r.value = p.role; }
+        docs = getJSON(K_DOCS(activeCaseId), []);
+        renderDocsTable();
 
-      const hasProfile = !!getJSON(K_PROFILE);
-      const hasAccount = !!getJSON(K_ACCOUNT);
-      if (!hasProfile) showScreen("login");
-      else if (!hasAccount) showScreen("account");
-      else { showScreen("dashboard"); renderDashboard(); }
+        const hasProfile = !!getJSON(K_PROFILE(activeCaseId));
+        const hasAccount = !!getJSON(K_ACCOUNT(activeCaseId));
+        if (!hasProfile) showScreen("profile");
+        else if (!hasAccount) showScreen("account");
+        else { showScreen("dashboard"); renderDashboard(); }
+      } else {
+        showScreen("login");
+      }
 
       // hash navigation (optional)
       window.addEventListener("hashchange", ()=>{
