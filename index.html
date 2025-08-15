@@ -47,14 +47,20 @@
       </div>
       <div class="button-group">
         <button type="button" class="btn btn-secondary" onclick="showScreen('login')">Back</button>
-        <button type="button" class="btn btn-primary" onclick="showScreen('dashboard')">Save Profile</button>
+        <button type="button" class="btn btn-primary" onclick="saveProfile()">Save Profile</button>
       </div>
     </form>
   </section>
 
   <section id="dashboard" style="display: none;">
     <h1>Dashboard</h1>
-    <p>Welcome to your dashboard.</p>
+    <div id="account-info"></div>
+    <h2>Documents</h2>
+    <ul id="documents-list"></ul>
+    <div class="form-group">
+      <input id="new-doc" type="text" placeholder="Document name" />
+      <button type="button" class="btn btn-primary" onclick="addDocument()">Add Document</button>
+    </div>
     <div class="button-group">
       <button type="button" class="btn btn-secondary" onclick="showScreen('profile')">Back</button>
     </div>
@@ -67,9 +73,64 @@
       });
     }
 
+    function getAccount() {
+      const account = localStorage.getItem('briefly_account');
+      return account ? JSON.parse(account) : null;
+    }
+
+    function saveAccount(account) {
+      localStorage.setItem('briefly_account', JSON.stringify(account));
+    }
+
+    function getDocuments() {
+      const docs = localStorage.getItem('briefly_docs');
+      return docs ? JSON.parse(docs) : [];
+    }
+
+    function saveDocuments(docs) {
+      localStorage.setItem('briefly_docs', JSON.stringify(docs));
+    }
+
+    function renderDashboard(account, docs) {
+      const accountInfo = document.getElementById('account-info');
+      accountInfo.textContent = account
+        ? `Logged in as ${account.firstName} ${account.lastName}`
+        : 'No account information';
+
+      const list = document.getElementById('documents-list');
+      list.innerHTML = '';
+      docs.forEach((doc) => {
+        const li = document.createElement('li');
+        li.textContent = doc;
+        list.appendChild(li);
+      });
+    }
+
+    function saveProfile() {
+      const firstName = document.getElementById('first-name').value;
+      const lastName = document.getElementById('last-name').value;
+      const account = { firstName, lastName };
+      saveAccount(account);
+      renderDashboard(account, getDocuments());
+      showScreen('dashboard');
+    }
+
+    function addDocument() {
+      const input = document.getElementById('new-doc');
+      const name = input.value.trim();
+      if (!name) return;
+      const docs = getDocuments();
+      docs.push(name);
+      saveDocuments(docs);
+      input.value = '';
+      renderDashboard(getAccount(), docs);
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
-      const profile = localStorage.getItem('briefly_profile');
-      if (profile) {
+      const account = getAccount();
+      const docs = getDocuments();
+      if (account) {
+        renderDashboard(account, docs);
         showScreen('dashboard');
       } else {
         showScreen('login');
