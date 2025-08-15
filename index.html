@@ -235,6 +235,7 @@
     const getJSON = (k, def=null) => { try { return JSON.parse(localStorage.getItem(k) ?? "null") ?? def; } catch { return def; } };
     const setJSON = (k, v) => localStorage.setItem(k, JSON.stringify(v));
     const del = (k) => localStorage.removeItem(k);
+    const isAccountComplete = acc => !!(acc?.caseNumber?.trim() && acc?.role);
 
       const loadCards = () => {
         const stored = getJSON(K_CARDS);
@@ -521,8 +522,8 @@
       document.getElementById("profileMsg").textContent = "Profile saved.";
       const accRole = document.getElementById("accountRole");
       if (accRole && data.role) accRole.value = data.role;
-      const hasAccount = !!getJSON(K_ACCOUNT);
-      if (hasAccount) { showScreen("dashboard"); renderDashboard(); }
+      const account = getJSON(K_ACCOUNT);
+      if (isAccountComplete(account)) { showScreen("dashboard"); renderDashboard(); }
       else showScreen("account");
     });
 
@@ -633,10 +634,15 @@
     document.getElementById("saveAccountBtn").addEventListener("click", ()=>{
       const caseNumber = document.getElementById("caseNumber").value.trim();
       const role = document.getElementById("accountRole").value;
-      setJSON(K_ACCOUNT, { caseNumber, role });
+      const account = { caseNumber, role };
+      setJSON(K_ACCOUNT, account);
       setJSON(K_DOCS, docs); // ensure persisted
-      showScreen("dashboard");
-      renderDashboard();
+      if (isAccountComplete(account)) {
+        showScreen("dashboard");
+        renderDashboard();
+      } else {
+        showScreen("account");
+      }
     });
 
     // ---------- dashboard wiring ----------
@@ -710,9 +716,9 @@
       renderDocsTable();
 
       const hasProfile = !!getJSON(K_PROFILE);
-      const hasAccount = !!getJSON(K_ACCOUNT);
+      const account = getJSON(K_ACCOUNT);
       if (!hasProfile) showScreen("login");
-      else if (!hasAccount) showScreen("account");
+      else if (!isAccountComplete(account)) showScreen("account");
       else { showScreen("dashboard"); renderDashboard(); }
 
       // hash navigation (optional)
