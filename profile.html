@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Professional Profile</title>
+  <style>
+    body{font-family:Arial,Helvetica,sans-serif;max-width:600px;margin:40px auto;padding:0 16px;background:#f8fafc;color:#111827}
+    h1{font-size:24px}
+    label{display:block;margin:12px 0 4px;font-weight:600}
+    input,select{width:100%;padding:10px;border:1px solid #d1d5db;border-radius:8px}
+    button{margin-top:16px;padding:10px 14px;border:none;border-radius:8px;background:#2563eb;color:#fff;font-weight:700;cursor:pointer}
+    button:hover{filter:brightness(.95)}
+  </style>
+</head>
+<body>
+  <h1>Professional Profile</h1>
+  <form>
+    <label for="name">Name</label>
+    <input id="name" name="name" autocomplete="name" required />
+
+    <label for="case">Case</label>
+    <input id="case" name="case" required />
+
+    <label for="attorney">Attorney</label>
+    <input id="attorney" name="attorney" autocomplete="organization" required />
+
+    <label for="role">Role</label>
+    <select id="role" name="role" required>
+      <option value="">— Select —</option>
+      <option>Plaintiff</option>
+      <option>Defendant</option>
+    </select>
+
+    <button type="submit">Save Profile</button>
+  </form>
+</body>
+</html>
