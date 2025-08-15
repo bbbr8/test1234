@@ -6,7 +6,6 @@
   <title>Account Setup</title>
   <style>
     body { font-family: Arial, sans-serif; margin: 20px; }
-    .hidden { display: none; }
     form { max-width: 320px; margin: 0 auto; }
     .form-group { margin-bottom: 12px; display: flex; flex-direction: column; }
     label { margin-bottom: 4px; font-size: 14px; }
@@ -20,7 +19,7 @@
   </style>
 </head>
 <body>
-  <div id="login-screen">
+  <section id="login">
     <h1>Login</h1>
     <form>
       <div class="form-group">
@@ -31,11 +30,11 @@
         <label for="login-password">Password</label>
         <input id="login-password" type="password" />
       </div>
-      <button type="button" class="btn btn-primary" onclick="goToProfileSetup()">Next</button>
+      <button type="button" class="btn btn-primary" onclick="showScreen('profile')">Next</button>
     </form>
-  </div>
+  </section>
 
-  <div id="profile-screen" class="hidden">
+  <section id="profile" style="display: none;">
     <h1>Profile Setup</h1>
     <form>
       <div class="form-group">
@@ -47,21 +46,25 @@
         <input id="last-name" type="text" />
       </div>
       <div class="button-group">
-        <button type="button" class="btn btn-secondary" onclick="goToLogin()">Back</button>
-        <button type="submit" class="btn btn-primary">Save Profile</button>
+        <button type="button" class="btn btn-secondary" onclick="showScreen('login')">Back</button>
+        <button type="button" class="btn btn-primary" onclick="showScreen('dashboard')">Save Profile</button>
       </div>
     </form>
-  </div>
+  </section>
+
+  <section id="dashboard" style="display: none;">
+    <h1>Dashboard</h1>
+    <p>Welcome to your dashboard.</p>
+    <div class="button-group">
+      <button type="button" class="btn btn-secondary" onclick="showScreen('profile')">Back</button>
+    </div>
+  </section>
 
   <script>
-    function goToProfileSetup() {
-      document.getElementById('login-screen').classList.add('hidden');
-      document.getElementById('profile-screen').classList.remove('hidden');
-    }
-
-    function goToLogin() {
-      document.getElementById('profile-screen').classList.add('hidden');
-      document.getElementById('login-screen').classList.remove('hidden');
+    function showScreen(screen) {
+      ['login', 'profile', 'dashboard'].forEach(function (id) {
+        document.getElementById(id).style.display = id === screen ? 'block' : 'none';
+      });
     }
   </script>
 </body>
