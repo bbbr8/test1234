@@ -25,8 +25,9 @@
     button{cursor:pointer;border:none;border-radius:8px;padding:10px 14px;background:var(--brand);color:#fff;font-weight:700}
     button:hover{filter:brightness(.95)} .btn-ghost{background:#6b7280} .btn-ghost:hover{background:#4b5563}
     .hidden{display:none}
+    .error{color:#dc2626;font-size:12px}
     table{width:100%;border-collapse:collapse;margin-top:12px}
-    th,td{border:1px solid var(--border);padding:8px;text-align:left}
+    th,td{border:1px solid var(--border);padding:8px;text-align:left;vertical-align:top}
     .topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
     .summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:10px 0 0}
     .summary div{background:#f3f4f6;border:1px solid var(--border);border-radius:8px;padding:10px}
@@ -187,25 +188,49 @@
     const setJSON = (k, v) => localStorage.setItem(k, JSON.stringify(v));
     const del = (k) => localStorage.removeItem(k);
 
-    const loadCards = () => {
-      const stored = getJSON(K_CARDS);
-      if (!stored || !stored.length) {
-        return DEFAULT_CARDS.map(c => ({
+      const loadCards = () => {
+        const stored = getJSON(K_CARDS);
+        const toggleBase = {
+          construction:false,
+          contingency:false,
+          land:false,
+          slab:false,
+          wall:false,
+          pool:false,
+          furniture:false
+        };
+        const amountBase = {
+          construction:0,
+          contingency:0,
+          land:0,
+          slab:0,
+          wall:0,
+          pool:0,
+          furniture:0
+        };
+        if (!stored || !stored.length) {
+          return DEFAULT_CARDS.map(c => ({
+            ...c,
+            expanded:false,
+            toggles:{
+              construction:true,
+              contingency:true,
+              land:false,
+              slab:false,
+              wall:false,
+              pool:false,
+              furniture:false
+            },
+            amounts:{...amountBase, construction:c.total}
+          }));
+        }
+        return stored.map(c=>({
           ...c,
-          expanded:false,
-          toggles:{
-            construction:true,
-            contingency:true,
-            land:false,
-            slab:false,
-            wall:false,
-            pool:false,
-            furniture:false
-          }
+          expanded:!!c.expanded,
+          toggles:{...toggleBase, ...(c.toggles||{})},
+          amounts:{...amountBase, ...(c.amounts||{})}
         }));
-      }
-      return stored;
-    };
+      };
     const saveCards = (cards) => setJSON(K_CARDS, cards);
 
     function firstFocusable(el){
@@ -224,79 +249,141 @@
       location.hash = `#${name}`;
     }
 
-    function renderCards(){
-      const cards = loadCards();
-      const list = document.getElementById("cardList");
-      if (!list) return;
-      list.innerHTML = "";
-      const fmt = new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'});
-      cards.forEach(card=>{
-        const cardEl = document.createElement("div");
-        cardEl.className = "card";
+      function renderCards(){
+        const cards = loadCards();
+        const list = document.getElementById("cardList");
+        if (!list) return;
+        list.innerHTML = "";
+        const fmt = new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'});
+        cards.forEach(card=>{
+          const cardEl = document.createElement("div");
+          cardEl.className = "card";
 
-        const header = document.createElement("div");
-        header.style.display = "flex";
-        header.style.alignItems = "center";
-        header.style.gap = "var(--gap)";
+          const header = document.createElement("div");
+          header.style.display = "flex";
+          header.style.alignItems = "center";
+          header.style.gap = "var(--gap)";
 
-        const titleEl = document.createElement("span");
-        titleEl.textContent = card.title;
+          const titleEl = document.createElement("span");
+          titleEl.textContent = card.title;
 
-        const totalEl = document.createElement("span");
-        totalEl.textContent = fmt.format(card.total);
-        totalEl.style.marginLeft = "auto";
+          const totalEl = document.createElement("span");
+          totalEl.style.marginLeft = "auto";
 
-        const btn = document.createElement("button");
-        btn.type = "button";
-        btn.textContent = card.expanded ? "Collapse" : "Expand";
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.textContent = card.expanded ? "Collapse" : "Expand";
 
-        header.appendChild(titleEl);
-        header.appendChild(totalEl);
-        header.appendChild(btn);
-        cardEl.appendChild(header);
+          header.appendChild(titleEl);
+          header.appendChild(totalEl);
+          header.appendChild(btn);
+          cardEl.appendChild(header);
 
-        const panel = document.createElement("div");
-        panel.className = "card-panel";
-        panel.style.display = card.expanded ? "block" : "none";
-        const toggleMap = {
-          construction:"Construction",
-          contingency:"Contingency",
-          land:"Land",
-          slab:"Slab",
-          wall:"Wall/Fence",
-          pool:"Pool",
-          furniture:"Furniture"
-        };
-        card.toggles = card.toggles || {};
-        Object.entries(toggleMap).forEach(([key,label])=>{
-          const id = `${card.id}-${key}`;
-          const labelEl = document.createElement("label");
-          labelEl.style.display = "block";
-          const cb = document.createElement("input");
-          cb.type = "checkbox";
-          cb.id = id;
-          cb.checked = !!card.toggles[key];
-          cb.addEventListener("change",()=>{
-            card.toggles[key] = cb.checked;
+          const panel = document.createElement("div");
+          panel.className = "card-panel";
+          panel.style.display = card.expanded ? "block" : "none";
+          const toggleMap = {
+            construction:"Construction",
+            contingency:"Contingency",
+            land:"Land",
+            slab:"Slab",
+            wall:"Wall/Fence",
+            pool:"Pool",
+            furniture:"Furniture"
+          };
+          card.toggles = card.toggles || {};
+          card.amounts = card.amounts || {};
+
+          const table = document.createElement("table");
+          const thead = document.createElement("thead");
+          thead.innerHTML = `<tr><th>Item</th><th>Enabled</th><th>Amount</th></tr>`;
+          table.appendChild(thead);
+          const tbody = document.createElement("tbody");
+          table.appendChild(tbody);
+
+          const updateTotal = () => {
+            card.total = Object.keys(toggleMap).reduce((sum,key)=>{
+              return sum + (card.toggles[key] ? Number(card.amounts[key]||0) : 0);
+            },0);
+            totalEl.textContent = fmt.format(card.total);
+            saveCards(cards);
+          };
+
+          Object.entries(toggleMap).forEach(([key,label])=>{
+            const tr = document.createElement("tr");
+            const tdItem = document.createElement("td");
+            tdItem.textContent = label;
+            tr.appendChild(tdItem);
+
+            const tdEnable = document.createElement("td");
+            const cb = document.createElement("input");
+            cb.type = "checkbox";
+            cb.checked = !!card.toggles[key];
+            cb.addEventListener("change",()=>{
+              card.toggles[key] = cb.checked;
+              updateTotal();
+            });
+            tdEnable.appendChild(cb);
+            tr.appendChild(tdEnable);
+
+            const tdAmount = document.createElement("td");
+            const input = document.createElement("input");
+            input.type = "text";
+            input.inputMode = "decimal";
+            input.value = card.amounts[key] ? fmt.format(card.amounts[key]) : "";
+            const err = document.createElement("div");
+            err.className = "error";
+            err.style.display = "none";
+
+            const validate = () => {
+              const raw = input.value.trim();
+              if (!raw){
+                card.amounts[key] = 0;
+                err.style.display = "none";
+                updateTotal();
+                return;
+              }
+              if (/^\d*(\.\d{0,2})?$/.test(raw)) {
+                card.amounts[key] = Number(raw);
+                err.style.display = "none";
+                updateTotal();
+              } else {
+                err.textContent = "Invalid amount";
+                err.style.display = "block";
+              }
+            };
+
+            input.addEventListener('focus', ()=>{
+              input.value = card.amounts[key] ? String(card.amounts[key]) : '';
+            });
+            input.addEventListener('input', validate);
+            input.addEventListener('blur', ()=>{
+              validate();
+              if (err.style.display === 'none' && input.value.trim() !== '') {
+                input.value = fmt.format(card.amounts[key]);
+              }
+            });
+
+            tdAmount.appendChild(input);
+            tdAmount.appendChild(err);
+            tr.appendChild(tdAmount);
+            tbody.appendChild(tr);
+          });
+
+          panel.appendChild(table);
+          cardEl.appendChild(panel);
+
+          btn.addEventListener("click",()=>{
+            card.expanded = !card.expanded;
+            panel.style.display = card.expanded ? "block" : "none";
+            btn.textContent = card.expanded ? "Collapse" : "Expand";
             saveCards(cards);
           });
-          labelEl.appendChild(cb);
-          labelEl.appendChild(document.createTextNode(" " + label));
-          panel.appendChild(labelEl);
-        });
-        cardEl.appendChild(panel);
 
-        btn.addEventListener("click",()=>{
-          card.expanded = !card.expanded;
-          panel.style.display = card.expanded ? "block" : "none";
-          btn.textContent = card.expanded ? "Collapse" : "Expand";
-          saveCards(cards);
+          list.appendChild(cardEl);
+          updateTotal();
         });
-
-        list.appendChild(cardEl);
-      });
-      saveCards(cards);
-    }
+      }
 
     function renderDashboard(){
       const p = getJSON(K_PROFILE, {});
@@ -413,21 +500,30 @@
     // ---------- dashboard wiring ----------
     document.getElementById("addCardBtn").addEventListener("click", ()=>{
       const cards = loadCards();
-      cards.push({
-        id: Date.now().toString(),
-        title: "Untitled",
-        total: 0,
-        toggles:{
-          construction:false,
-          contingency:false,
-          land:false,
-          slab:false,
-          wall:false,
-          pool:false,
-          furniture:false
-        },
-        expanded:false
-      });
+        cards.push({
+          id: Date.now().toString(),
+          title: "Untitled",
+          total: 0,
+          toggles:{
+            construction:false,
+            contingency:false,
+            land:false,
+            slab:false,
+            wall:false,
+            pool:false,
+            furniture:false
+          },
+          amounts:{
+            construction:0,
+            contingency:0,
+            land:0,
+            slab:0,
+            wall:0,
+            pool:0,
+            furniture:0
+          },
+          expanded:false
+        });
       saveCards(cards);
       renderCards();
     });
