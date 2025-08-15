@@ -179,6 +179,17 @@
           <div><strong>Role</strong><div id="sumRole">—</div></div>
         </div>
 
+        <div id="profileCard" style="display:flex;gap:var(--gap);align-items:flex-start;margin-top:var(--gap)">
+          <img id="sumPhoto" alt="Profile photo" style="width:80px;height:80px;border-radius:50%;object-fit:cover;display:none" />
+          <div>
+            <div><strong>Email:</strong> <span id="sumEmail">—</span></div>
+            <div><strong>Phone:</strong> <span id="sumPhone">—</span></div>
+            <div><strong>Address:</strong> <span id="sumAddress">—</span></div>
+            <div><strong>Organization:</strong> <span id="sumOrganization">—</span></div>
+            <div><strong>Primary Attorney:</strong> <span id="sumPrimaryAttorney">—</span></div>
+          </div>
+        </div>
+
         <h2 style="margin-top:16px">Case Info</h2>
         <p id="caseInfo">—</p>
 
@@ -451,6 +462,19 @@
       document.getElementById("sumName").textContent = [p.firstName, p.lastName].filter(Boolean).join(" ") || "—";
       document.getElementById("sumCase").textContent = p.caseName || "—";
       document.getElementById("sumRole").textContent = p.role || "—";
+      document.getElementById("sumEmail").textContent = p.email || "—";
+      document.getElementById("sumPhone").textContent = p.phone || "—";
+      document.getElementById("sumAddress").textContent = p.address || "—";
+      document.getElementById("sumOrganization").textContent = p.organization || "—";
+      document.getElementById("sumPrimaryAttorney").textContent = p.primaryAttorney || "—";
+      const photoEl = document.getElementById("sumPhoto");
+      if (p.photo){
+        photoEl.src = p.photo;
+        photoEl.style.display = "block";
+      } else {
+        photoEl.removeAttribute("src");
+        photoEl.style.display = "none";
+      }
       document.getElementById("caseInfo").textContent =
         a.caseNumber ? `Case #${a.caseNumber} — ${a.role || "—"}` : "—";
 
