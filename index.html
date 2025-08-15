@@ -236,6 +236,7 @@
     const setJSON = (k, v) => localStorage.setItem(k, JSON.stringify(v));
     const del = (k) => localStorage.removeItem(k);
     const isAccountComplete = acc => !!(acc?.caseNumber?.trim() && acc?.role);
+    const safe = (str) => String(str ?? "");
 
       const loadCards = () => {
         const stored = getJSON(K_CARDS);
@@ -487,13 +488,27 @@
         const tr = document.createElement("tr");
         const added = new Date(d.addedAt||Date.now()).toLocaleString();
         const icon = fileIcon(d.name);
-        tr.innerHTML = `
-          <td>${icon} ${d.displayName || d.name}</td>
-          <td>${Math.max(1, Math.round((d.size||0)/1024))}</td>
-          <td>${d.type || "—"}</td>
-          <td>${d.category || "Case Document"}</td>
-          <td>${added}</td>
-        `;
+
+        const tdName = document.createElement("td");
+        tdName.textContent = `${icon} ${safe(d.displayName || d.name)}`;
+        tr.appendChild(tdName);
+
+        const tdSize = document.createElement("td");
+        tdSize.textContent = String(Math.max(1, Math.round((d.size||0)/1024)));
+        tr.appendChild(tdSize);
+
+        const tdType = document.createElement("td");
+        tdType.textContent = safe(d.type || "—");
+        tr.appendChild(tdType);
+
+        const tdCategory = document.createElement("td");
+        tdCategory.textContent = safe(d.category || "Case Document");
+        tr.appendChild(tdCategory);
+
+        const tdAdded = document.createElement("td");
+        tdAdded.textContent = added;
+        tr.appendChild(tdAdded);
+
         tbody.appendChild(tr);
       });
       renderCards();
@@ -573,20 +588,45 @@
       docs.forEach((d,i)=>{
         const tr = document.createElement("tr");
         const icon = fileIcon(d.name);
-        tr.innerHTML = `
-          <td>${icon} <input type="text" value="${d.displayName||d.name}" data-name-idx="${i}" style="width:100%" /></td>
-          <td>${Math.max(1,Math.round(d.size/1024))}</td>
-          <td>${d.type || "—"}</td>
-          <td>
-            <select data-idx="${i}">
-              <option ${d.category==="Case Document"?"selected":""}>Case Document</option>
-              <option ${d.category==="Motion"?"selected":""}>Motion</option>
-              <option ${d.category==="Subpoena"?"selected":""}>Subpoena</option>
-              <option ${d.category==="Other"?"selected":""}>Other</option>
-            </select>
-          </td>
-          <td><button type="button" data-rm="${i}">Remove</button></td>
-        `;
+
+        const tdName = document.createElement("td");
+        tdName.append(document.createTextNode(icon + " "));
+        const input = document.createElement("input");
+        input.type = "text";
+        input.value = safe(d.displayName || d.name);
+        input.dataset.nameIdx = String(i);
+        input.style.width = "100%";
+        tdName.appendChild(input);
+        tr.appendChild(tdName);
+
+        const tdSize = document.createElement("td");
+        tdSize.textContent = String(Math.max(1,Math.round(d.size/1024)));
+        tr.appendChild(tdSize);
+
+        const tdType = document.createElement("td");
+        tdType.textContent = safe(d.type || "—");
+        tr.appendChild(tdType);
+
+        const tdCategory = document.createElement("td");
+        const select = document.createElement("select");
+        select.dataset.idx = String(i);
+        ["Case Document","Motion","Subpoena","Other"].forEach(label=>{
+          const opt = document.createElement("option");
+          opt.textContent = label;
+          if (d.category === label) opt.selected = true;
+          select.appendChild(opt);
+        });
+        tdCategory.appendChild(select);
+        tr.appendChild(tdCategory);
+
+        const tdRm = document.createElement("td");
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.dataset.rm = String(i);
+        btn.textContent = "Remove";
+        tdRm.appendChild(btn);
+        tr.appendChild(tdRm);
+
         docsTableBody.appendChild(tr);
       });
     }
