@@ -53,16 +53,57 @@
     </form>
   </div>
 
+  <div id="dashboard" class="hidden">
+    <header>
+      <h1>Account Setup</h1>
+      <div id="client-summary">
+        <div>Name: <span id="summary-name"></span></div>
+        <div>Case: <span id="summary-case"></span></div>
+        <div>Role: <span id="summary-role"></span></div>
+      </div>
+      <button id="sign-out" class="btn btn-secondary">Sign Out</button>
+    </header>
+  </div>
+
   <script>
+    function showScreen(screen) {
+      const screens = ['login-screen', 'profile-screen', 'dashboard'];
+      screens.forEach((id) => {
+        const el = document.getElementById(id);
+        if (el) el.classList.add('hidden');
+      });
+
+      const targetId = screen === 'dashboard' ? 'dashboard' : `${screen}-screen`;
+      const target = document.getElementById(targetId);
+      if (target) target.classList.remove('hidden');
+
+      if (screen === 'dashboard') {
+        const data = localStorage.getItem('briefly_profile');
+        if (data) {
+          try {
+            const profile = JSON.parse(data);
+            document.getElementById('summary-name').textContent = profile.name || '';
+            document.getElementById('summary-case').textContent = profile.case || '';
+            document.getElementById('summary-role').textContent = profile.role || '';
+          } catch (err) {
+            console.error('Failed to parse profile', err);
+          }
+        }
+      }
+    }
+
     function goToProfileSetup() {
-      document.getElementById('login-screen').classList.add('hidden');
-      document.getElementById('profile-screen').classList.remove('hidden');
+      showScreen('profile');
     }
 
     function goToLogin() {
-      document.getElementById('profile-screen').classList.add('hidden');
-      document.getElementById('login-screen').classList.remove('hidden');
+      showScreen('login');
     }
+
+    document.getElementById('sign-out').addEventListener('click', () => {
+      localStorage.removeItem('briefly_profile');
+      showScreen('login');
+    });
   </script>
 </body>
 </html>
