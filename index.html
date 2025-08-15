@@ -57,13 +57,30 @@
     <p>Welcome to your dashboard.</p>
     <div class="button-group">
       <button type="button" class="btn btn-secondary" onclick="showScreen('profile')">Back</button>
+      <button type="button" class="btn btn-primary" onclick="showScreen('account')">Manage Documents</button>
     </div>
   </section>
 
   <script>
     function showScreen(screen) {
-      ['login', 'profile', 'dashboard'].forEach(function (id) {
-        document.getElementById(id).style.display = id === screen ? 'block' : 'none';
+      // Ensure an account section exists
+      if (!document.getElementById('account')) {
+        const accountSection = document.createElement('section');
+        accountSection.id = 'account';
+        accountSection.style.display = 'none';
+        accountSection.innerHTML = `
+        <h1>Manage Documents</h1>
+        <div class="button-group">
+          <button type="button" class="btn btn-secondary" onclick="showScreen('dashboard')">Back</button>
+        </div>`;
+        document.body.appendChild(accountSection);
+      }
+
+      ['login', 'profile', 'dashboard', 'account'].forEach(function (id) {
+        const el = document.getElementById(id);
+        if (el) {
+          el.style.display = id === screen ? 'block' : 'none';
+        }
       });
     }
 
