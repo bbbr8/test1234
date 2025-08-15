@@ -16,6 +16,10 @@
     .btn-secondary { background-color: #e0e0e0; color: #333; }
     .btn-secondary:hover { background-color: #cfcfcf; }
     .button-group { display: flex; justify-content: flex-end; gap: 8px; }
+    .card { border: 1px solid #ddd; padding: 16px; border-radius: 4px; margin-top: 16px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+    th { background-color: #f5f5f5; }
   </style>
 </head>
 <body>
@@ -55,16 +59,65 @@
   <section id="dashboard" style="display: none;">
     <h1>Dashboard</h1>
     <p>Welcome to your dashboard.</p>
+    <div id="case-info" class="card">
+      <p class="case-number"></p>
+      <p class="case-role"></p>
+      <table id="docs-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Size</th>
+            <th>Type</th>
+            <th>Category</th>
+            <th>Added</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
     <div class="button-group">
       <button type="button" class="btn btn-secondary" onclick="showScreen('profile')">Back</button>
+      <button type="button" class="btn btn-primary" id="manage-docs">Manage Documents</button>
     </div>
   </section>
 
   <script>
     function showScreen(screen) {
-      ['login', 'profile', 'dashboard'].forEach(function (id) {
-        document.getElementById(id).style.display = id === screen ? 'block' : 'none';
+      const target = document.getElementById(screen);
+      if (!target) return;
+      document.querySelectorAll('section').forEach(function (sec) {
+        sec.style.display = sec === target ? 'block' : 'none';
       });
+      if (screen === 'dashboard') {
+        renderDashboard();
+      }
+    }
+
+    function renderDashboard() {
+      const account = JSON.parse(localStorage.getItem('briefly_account') || '{}');
+      const docs = JSON.parse(localStorage.getItem('briefly_docs') || '[]');
+
+      const caseInfo = document.getElementById('case-info');
+      if (caseInfo) {
+        caseInfo.querySelector('.case-number').textContent = `Case Number: ${account.caseNumber || ''}`;
+        caseInfo.querySelector('.case-role').textContent = `Role: ${account.role || ''}`;
+      }
+
+      const tbody = document.querySelector('#docs-table tbody');
+      if (tbody) {
+        tbody.innerHTML = '';
+        docs.forEach(function (doc) {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${doc.name || ''}</td>
+            <td>${doc.size || ''}</td>
+            <td>${doc.type || ''}</td>
+            <td>${doc.category || ''}</td>
+            <td>${doc.added || ''}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+      }
     }
 
     document.addEventListener('DOMContentLoaded', () => {
@@ -73,6 +126,11 @@
         showScreen('dashboard');
       } else {
         showScreen('login');
+      }
+
+      const manageDocsBtn = document.getElementById('manage-docs');
+      if (manageDocsBtn) {
+        manageDocsBtn.addEventListener('click', () => showScreen('account'));
       }
     });
   </script>
