@@ -7,35 +7,132 @@
   <style>
     body { font-family: Arial, sans-serif; margin: 20px; }
     h1 { color: blue; }
+    #cards { margin-bottom: 10px; }
     .card { border: 1px solid #ccc; border-radius: 8px; padding: 16px; margin-bottom: 10px; }
-    .header { display: flex; justify-content: space-between; align-items: center; }
+    .header { display: flex; align-items: center; }
+    .header h2 { margin: 0; }
+    .header .total { margin-left: auto; margin-right: 10px; }
     .toggles { margin-top: 10px; }
+    #add-card { padding: 4px 8px; }
   </style>
 </head>
 <body>
   <h1>Briefly Dashboard – Test Update</h1>
-
-  <div class="card">
-    <div class="header">
-      <h2>REPC / Contract</h2>
-      <span>$792,254.00</span>
-      <button onclick="toggleDetails(this)">Expand</button>
-    </div>
-    <div class="toggles" style="display:none;">
-      <label><input type="checkbox" checked> Construction</label><br>
-      <label><input type="checkbox" checked> Contingency</label><br>
-      <label><input type="checkbox"> Land</label>
-    </div>
-  </div>
+  <section id="dashboard">
+    <div id="cards"></div>
+    <button id="add-card">+ Add Card</button>
+  </section>
 
   <script>
-    function toggleDetails(button) {
-      const toggles = button.parentElement.nextElementSibling;
-      const visible = toggles.style.display === 'block';
-      toggles.style.display = visible ? 'none' : 'block';
-      button.textContent = visible ? 'Expand' : 'Collapse';
+    const defaultCards = [
+      {id:'repc', title:'REPC / Contract', total:792254},
+      {id:'b2', title:'Budget 2', total:650000},
+      {id:'b3', title:'Budget 3', total:500000}
+    ];
+    const toggleNames = ['Construction','Contingency','Land','Slab','Wall/Fence','Pool','Furniture'];
+
+    function loadCards() {
+      const stored = localStorage.getItem('briefly_cards');
+      if (stored) return JSON.parse(stored);
+      const init = {};
+      defaultCards.forEach(c => {
+        init[c.id] = {
+          ...c,
+          expanded: false,
+          toggles: {
+            Construction: true,
+            Contingency: true,
+            Land: false,
+            Slab: false,
+            'Wall/Fence': false,
+            Pool: false,
+            Furniture: false
+          }
+        };
+      });
+      localStorage.setItem('briefly_cards', JSON.stringify(init));
+      return init;
     }
+
+    function saveCards(cards) {
+      localStorage.setItem('briefly_cards', JSON.stringify(cards));
+    }
+
+    let cards = loadCards();
+    const cardsDiv = document.getElementById('cards');
+
+    function renderCards() {
+      cardsDiv.innerHTML = '';
+      Object.values(cards).forEach(card => {
+        const cardEl = document.createElement('div');
+        cardEl.className = 'card';
+        cardEl.dataset.id = card.id;
+
+        const header = document.createElement('div');
+        header.className = 'header';
+        const title = document.createElement('h2');
+        title.textContent = card.title;
+        const total = document.createElement('span');
+        total.className = 'total';
+        total.textContent = card.total.toLocaleString('en-US', {style:'currency', currency:'USD'});
+        const toggleBtn = document.createElement('button');
+        toggleBtn.textContent = card.expanded ? 'Collapse' : 'Expand';
+        toggleBtn.addEventListener('click', () => {
+          card.expanded = !card.expanded;
+          saveCards(cards);
+          renderCards();
+        });
+        header.appendChild(title);
+        header.appendChild(total);
+        header.appendChild(toggleBtn);
+        cardEl.appendChild(header);
+
+        const togglesEl = document.createElement('div');
+        togglesEl.className = 'toggles';
+        togglesEl.style.display = card.expanded ? 'block' : 'none';
+
+        toggleNames.forEach(name => {
+          const label = document.createElement('label');
+          const input = document.createElement('input');
+          input.type = 'checkbox';
+          input.checked = card.toggles[name] || false;
+          input.addEventListener('change', () => {
+            card.toggles[name] = input.checked;
+            saveCards(cards);
+          });
+          label.appendChild(input);
+          label.appendChild(document.createTextNode(' ' + name));
+          togglesEl.appendChild(label);
+          togglesEl.appendChild(document.createElement('br'));
+        });
+
+        cardEl.appendChild(togglesEl);
+        cardsDiv.appendChild(cardEl);
+      });
+    }
+
+    document.getElementById('add-card').addEventListener('click', () => {
+      const id = 'card' + Date.now();
+      cards[id] = {
+        id,
+        title: 'Untitled',
+        total: 0,
+        expanded: false,
+        toggles: {
+          Construction: false,
+          Contingency: false,
+          Land: false,
+          Slab: false,
+          'Wall/Fence': false,
+          Pool: false,
+          Furniture: false
+        }
+      };
+      saveCards(cards);
+      renderCards();
+    });
+
+    renderCards();
   </script>
 </body>
 </html>
-
