@@ -5,19 +5,41 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Account Setup</title>
   <style>
-    body { font-family: Arial, sans-serif; margin: 20px; }
+    :root {
+      --font-base: 16px;
+      --font-sm: 14px;
+      --font-xs: 12px;
+      --space-xs: 4px;
+      --space-sm: 8px;
+      --space-md: 12px;
+      --space-lg: 20px;
+      --space-btn-y: 10px;
+      --space-btn-x: 16px;
+      --focus-color: #0069d9;
+    }
+
+    :focus-visible {
+      outline: 2px solid var(--focus-color);
+      outline-offset: 2px;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      margin: var(--space-lg);
+      font-size: var(--font-base);
+    }
     form { max-width: 320px; margin: 0 auto; }
-    .form-group { margin-bottom: 12px; display: flex; flex-direction: column; }
-    label { margin-bottom: 4px; font-size: 14px; }
-    input, select { padding: 8px; font-size: 14px; }
-    table { width: 100%; border-collapse: collapse; margin-top: 12px; }
-    th, td { border: 1px solid #ccc; padding: 4px; font-size: 12px; }
-    .btn { padding: 10px 16px; font-size: 14px; border: none; border-radius: 4px; cursor: pointer; transition: background-color 0.2s ease-in-out; }
+    .form-group { margin-bottom: var(--space-md); display: flex; flex-direction: column; }
+    label { margin-bottom: var(--space-xs); font-size: var(--font-sm); }
+    input, select { padding: var(--space-sm); font-size: var(--font-sm); }
+    table { width: 100%; border-collapse: collapse; margin-top: var(--space-md); }
+    th, td { border: 1px solid #ccc; padding: var(--space-xs); font-size: var(--font-xs); }
+    .btn { padding: var(--space-btn-y) var(--space-btn-x); font-size: var(--font-sm); border: none; border-radius: 4px; cursor: pointer; transition: background-color 0.2s ease-in-out; }
     .btn-primary { background-color: #007bff; color: #fff; }
     .btn-primary:hover { background-color: #0069d9; }
     .btn-secondary { background-color: #e0e0e0; color: #333; }
     .btn-secondary:hover { background-color: #cfcfcf; }
-    .button-group { display: flex; justify-content: flex-end; gap: 8px; }
+    .button-group { display: flex; justify-content: flex-end; gap: var(--space-sm); }
   </style>
 </head>
 <body>
