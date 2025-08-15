@@ -1,1 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Briefly Dashboard</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    .card { border: 1px solid #ccc; border-radius: 8px; padding: 16px; margin-bottom: 10px; }
+    .header { display: flex; justify-content: space-between; align-items: center; }
+    .toggles { margin-top: 10px; }
+  </style>
+</head>
+<body>
+  <h1>Briefly Dashboard</h1>
+
+  <div class="card">
+    <div class="header">
+      <h2>REPC / Contract</h2>
+      <span>$792,254.00</span>
+      <button onclick="toggleDetails(this)">Expand</button>
+    </div>
+    <div class="toggles" style="display:none;">
+      <label><input type="checkbox" checked> Construction</label><br>
+      <label><input type="checkbox" checked> Contingency</label><br>
+      <label><input type="checkbox"> Land</label>
+    </div>
+  </div>
+
+  <script>
+    function toggleDetails(button) {
+      const toggles = button.parentElement.nextElementSibling;
+      const visible = toggles.style.display === 'block';
+      toggles.style.display = visible ? 'none' : 'block';
+      button.textContent = visible ? 'Expand' : 'Collapse';
+    }
+  </script>
+</body>
+</html>
 
