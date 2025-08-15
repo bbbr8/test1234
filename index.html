@@ -9,7 +9,9 @@
     form { max-width: 320px; margin: 0 auto; }
     .form-group { margin-bottom: 12px; display: flex; flex-direction: column; }
     label { margin-bottom: 4px; font-size: 14px; }
-    input { padding: 8px; font-size: 14px; }
+    input, select { padding: 8px; font-size: 14px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+    th, td { border: 1px solid #ccc; padding: 4px; font-size: 12px; }
     .btn { padding: 10px 16px; font-size: 14px; border: none; border-radius: 4px; cursor: pointer; transition: background-color 0.2s ease-in-out; }
     .btn-primary { background-color: #007bff; color: #fff; }
     .btn-primary:hover { background-color: #0069d9; }
@@ -45,9 +47,53 @@
         <label for="last-name">Last Name</label>
         <input id="last-name" type="text" />
       </div>
+      <div class="form-group">
+        <label for="profile-role">Role</label>
+        <select id="profile-role">
+          <option value="Plaintiff">Plaintiff</option>
+          <option value="Defendant">Defendant</option>
+        </select>
+      </div>
       <div class="button-group">
         <button type="button" class="btn btn-secondary" onclick="showScreen('login')">Back</button>
-        <button type="button" class="btn btn-primary" onclick="showScreen('dashboard')">Save Profile</button>
+        <button type="button" class="btn btn-primary" onclick="saveProfile()">Save &amp; Continue</button>
+      </div>
+    </form>
+  </section>
+
+  <section id="account" style="display: none;">
+    <h1>Account Details</h1>
+    <form id="account-form">
+      <div class="form-group">
+        <label for="case-number">Case Number</label>
+        <input id="case-number" type="text" />
+      </div>
+      <div class="form-group">
+        <label for="account-role">Role</label>
+        <select id="account-role">
+          <option value="Plaintiff">Plaintiff</option>
+          <option value="Defendant">Defendant</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="documents">Documents</label>
+        <input id="documents" type="file" multiple />
+      </div>
+      <table id="docs-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Size (KB)</th>
+            <th>Type</th>
+            <th>Category</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <div class="button-group">
+        <button type="button" class="btn btn-secondary" onclick="showScreen('profile')">Back</button>
+        <button type="button" class="btn btn-primary" onclick="saveAccount()">Save &amp; Continue</button>
       </div>
     </form>
   </section>
@@ -57,22 +103,139 @@
     <p>Welcome to your dashboard.</p>
     <div class="button-group">
       <button type="button" class="btn btn-secondary" onclick="showScreen('profile')">Back</button>
+      <button type="button" class="btn btn-primary" onclick="signOut()">Sign Out</button>
     </div>
   </section>
 
   <script>
+    let docs = [];
+
     function showScreen(screen) {
-      ['login', 'profile', 'dashboard'].forEach(function (id) {
+      ['login', 'profile', 'account', 'dashboard'].forEach(function (id) {
         document.getElementById(id).style.display = id === screen ? 'block' : 'none';
+      });
+      if (screen === 'profile') {
+        loadProfile();
+      }
+      if (screen === 'account') {
+        loadAccount();
+      }
+    }
+
+    function loadProfile() {
+      const data = JSON.parse(localStorage.getItem('briefly_profile') || '{}');
+      document.getElementById('first-name').value = data.firstName || '';
+      document.getElementById('last-name').value = data.lastName || '';
+      document.getElementById('profile-role').value = data.role || 'Plaintiff';
+    }
+
+    function saveProfile() {
+      const profile = {
+        firstName: document.getElementById('first-name').value,
+        lastName: document.getElementById('last-name').value,
+        role: document.getElementById('profile-role').value,
+      };
+      localStorage.setItem('briefly_profile', JSON.stringify(profile));
+      showScreen('account');
+    }
+
+    function loadAccount() {
+      const account = JSON.parse(localStorage.getItem('briefly_account') || '{}');
+      const profile = JSON.parse(localStorage.getItem('briefly_profile') || '{}');
+      document.getElementById('case-number').value = account.caseNumber || '';
+      document.getElementById('account-role').value =
+        account.role || profile.role || 'Plaintiff';
+      docs = JSON.parse(localStorage.getItem('briefly_docs') || '[]');
+      renderDocs();
+    }
+
+    function saveAccount() {
+      const account = {
+        caseNumber: document.getElementById('case-number').value,
+        role: document.getElementById('account-role').value,
+      };
+      localStorage.setItem('briefly_account', JSON.stringify(account));
+      localStorage.setItem('briefly_docs', JSON.stringify(docs));
+      showScreen('dashboard');
+    }
+
+    function signOut() {
+      ['briefly_profile', 'briefly_account', 'briefly_docs'].forEach((k) =>
+        localStorage.removeItem(k)
+      );
+      docs = [];
+      renderDocs();
+      showScreen('login');
+    }
+
+    function handleFiles(event) {
+      const files = Array.from(event.target.files);
+      files.forEach((file) => {
+        docs.push({
+          id: Date.now().toString(36) + Math.random().toString(36).slice(2),
+          name: file.name,
+          size: file.size,
+          type: file.type,
+          category: 'Case Document',
+          addedAt: new Date().toISOString(),
+        });
+      });
+      renderDocs();
+      event.target.value = '';
+    }
+
+    function renderDocs() {
+      const tbody = document.querySelector('#docs-table tbody');
+      tbody.innerHTML = '';
+      docs.forEach((doc) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${doc.name}</td>
+          <td>${(doc.size / 1024).toFixed(1)}</td>
+          <td>${doc.type || ''}</td>
+          <td>
+            <select class="doc-category" data-id="${doc.id}">
+              <option value="Case Document" ${doc.category === 'Case Document' ? 'selected' : ''}>Case Document</option>
+              <option value="Motion" ${doc.category === 'Motion' ? 'selected' : ''}>Motion</option>
+              <option value="Subpoena" ${doc.category === 'Subpoena' ? 'selected' : ''}>Subpoena</option>
+              <option value="Other" ${doc.category === 'Other' ? 'selected' : ''}>Other</option>
+            </select>
+          </td>
+          <td><button type="button" class="remove-doc" data-id="${doc.id}">Remove</button></td>
+        `;
+        tbody.appendChild(tr);
       });
     }
 
     document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('documents').addEventListener('change', handleFiles);
+      document
+        .querySelector('#docs-table tbody')
+        .addEventListener('change', (e) => {
+          if (e.target.classList.contains('doc-category')) {
+            const id = e.target.getAttribute('data-id');
+            const doc = docs.find((d) => d.id === id);
+            if (doc) doc.category = e.target.value;
+          }
+        });
+      document
+        .querySelector('#docs-table tbody')
+        .addEventListener('click', (e) => {
+          if (e.target.classList.contains('remove-doc')) {
+            const id = e.target.getAttribute('data-id');
+            docs = docs.filter((d) => d.id !== id);
+            renderDocs();
+          }
+        });
+
       const profile = localStorage.getItem('briefly_profile');
-      if (profile) {
-        showScreen('dashboard');
-      } else {
+      const account = localStorage.getItem('briefly_account');
+      if (!profile) {
         showScreen('login');
+      } else if (!account) {
+        showScreen('account');
+      } else {
+        showScreen('dashboard');
       }
     });
   </script>
