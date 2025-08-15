@@ -63,6 +63,15 @@
       document.getElementById('profile-screen').classList.add('hidden');
       document.getElementById('login-screen').classList.remove('hidden');
     }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const profile = localStorage.getItem('briefly_profile');
+      if (profile) {
+        showScreen('dashboard');
+      } else {
+        showScreen('login');
+      }
+    });
   </script>
 </body>
 </html>
