@@ -30,6 +30,8 @@
     .topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
     .summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:10px 0 0}
     .summary div{background:#f3f4f6;border:1px solid var(--border);border-radius:8px;padding:10px}
+    #cardList{display:flex;flex-direction:column;gap:var(--gap);margin-top:var(--gap)}
+    .card-panel{margin-top:var(--gap)}
     @media (prefers-color-scheme: dark){
       :root{--bg:#0b1220;--panel:#0f172a;--ink:#e5e7eb;--muted:#94a3b8;--border:#1f2937}
       .summary div{background:#111827}
@@ -162,7 +164,8 @@
           <button type="button" id="manageDocsBtn">Manage Documents</button>
         </div>
 
-        <p style="color:var(--muted);margin-top:12px">Next: add REPC/Budget cards with toggles.</p>
+        <div id="cardList"></div>
+        <button id="addCardBtn" type="button" style="margin-top:8px;font-size:12px;padding:6px 10px">+ Add Card</button>
       </section>
     </main>
   </div>
@@ -172,11 +175,38 @@
     const K_PROFILE = "briefly:v1:profile";
     const K_ACCOUNT = "briefly:v1:account";
     const K_DOCS    = "briefly:v1:docs";
+    const K_CARDS   = "briefly:v1:cards";
+    const DEFAULT_CARDS = [
+      {id:'repc', title:'REPC / Contract', total:792254},
+      {id:'b2', title:'Budget 2', total:650000},
+      {id:'b3', title:'Budget 3', total:500000}
+    ];
     const screens = ["login","profile","account","dashboard"];
 
     const getJSON = (k, def=null) => { try { return JSON.parse(localStorage.getItem(k) ?? "null") ?? def; } catch { return def; } };
     const setJSON = (k, v) => localStorage.setItem(k, JSON.stringify(v));
     const del = (k) => localStorage.removeItem(k);
+
+    const loadCards = () => {
+      const stored = getJSON(K_CARDS);
+      if (!stored || !stored.length) {
+        return DEFAULT_CARDS.map(c => ({
+          ...c,
+          expanded:false,
+          toggles:{
+            construction:true,
+            contingency:true,
+            land:false,
+            slab:false,
+            wall:false,
+            pool:false,
+            furniture:false
+          }
+        }));
+      }
+      return stored;
+    };
+    const saveCards = (cards) => setJSON(K_CARDS, cards);
 
     function firstFocusable(el){
       return el.querySelector('input, select, button, textarea, [tabindex]:not([tabindex="-1"])');
@@ -192,6 +222,80 @@
       const focusTarget = firstFocusable(document.getElementById(name));
       focusTarget && focusTarget.focus({preventScroll:true});
       location.hash = `#${name}`;
+    }
+
+    function renderCards(){
+      const cards = loadCards();
+      const list = document.getElementById("cardList");
+      if (!list) return;
+      list.innerHTML = "";
+      const fmt = new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'});
+      cards.forEach(card=>{
+        const cardEl = document.createElement("div");
+        cardEl.className = "card";
+
+        const header = document.createElement("div");
+        header.style.display = "flex";
+        header.style.alignItems = "center";
+        header.style.gap = "var(--gap)";
+
+        const titleEl = document.createElement("span");
+        titleEl.textContent = card.title;
+
+        const totalEl = document.createElement("span");
+        totalEl.textContent = fmt.format(card.total);
+        totalEl.style.marginLeft = "auto";
+
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.textContent = card.expanded ? "Collapse" : "Expand";
+
+        header.appendChild(titleEl);
+        header.appendChild(totalEl);
+        header.appendChild(btn);
+        cardEl.appendChild(header);
+
+        const panel = document.createElement("div");
+        panel.className = "card-panel";
+        panel.style.display = card.expanded ? "block" : "none";
+        const toggleMap = {
+          construction:"Construction",
+          contingency:"Contingency",
+          land:"Land",
+          slab:"Slab",
+          wall:"Wall/Fence",
+          pool:"Pool",
+          furniture:"Furniture"
+        };
+        card.toggles = card.toggles || {};
+        Object.entries(toggleMap).forEach(([key,label])=>{
+          const id = `${card.id}-${key}`;
+          const labelEl = document.createElement("label");
+          labelEl.style.display = "block";
+          const cb = document.createElement("input");
+          cb.type = "checkbox";
+          cb.id = id;
+          cb.checked = !!card.toggles[key];
+          cb.addEventListener("change",()=>{
+            card.toggles[key] = cb.checked;
+            saveCards(cards);
+          });
+          labelEl.appendChild(cb);
+          labelEl.appendChild(document.createTextNode(" " + label));
+          panel.appendChild(labelEl);
+        });
+        cardEl.appendChild(panel);
+
+        btn.addEventListener("click",()=>{
+          card.expanded = !card.expanded;
+          panel.style.display = card.expanded ? "block" : "none";
+          btn.textContent = card.expanded ? "Collapse" : "Expand";
+          saveCards(cards);
+        });
+
+        list.appendChild(cardEl);
+      });
+      saveCards(cards);
     }
 
     function renderDashboard(){
@@ -219,6 +323,7 @@
         `;
         tbody.appendChild(tr);
       });
+      renderCards();
     }
 
     // ---------- login/profile wiring ----------
@@ -306,6 +411,26 @@
     });
 
     // ---------- dashboard wiring ----------
+    document.getElementById("addCardBtn").addEventListener("click", ()=>{
+      const cards = loadCards();
+      cards.push({
+        id: Date.now().toString(),
+        title: "Untitled",
+        total: 0,
+        toggles:{
+          construction:false,
+          contingency:false,
+          land:false,
+          slab:false,
+          wall:false,
+          pool:false,
+          furniture:false
+        },
+        expanded:false
+      });
+      saveCards(cards);
+      renderCards();
+    });
     document.getElementById("signOutBtn").addEventListener("click", ()=>{
       [K_PROFILE, K_ACCOUNT, K_DOCS].forEach(del);
       docs = [];
