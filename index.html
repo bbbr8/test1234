@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="color-scheme" content="light dark" />
   <title>Account Setup</title>
   <style>
     body { font-family: Arial, sans-serif; margin: 20px; }
@@ -18,6 +19,14 @@
     .btn-secondary { background-color: #e0e0e0; color: #333; }
     .btn-secondary:hover { background-color: #cfcfcf; }
     .button-group { display: flex; justify-content: flex-end; gap: 8px; }
+    @media (prefers-color-scheme: dark) {
+      body { background-color: #121212; color: #f0f0f0; }
+      input, select, table, th, td { background-color: #1e1e1e; color: #f0f0f0; border-color: #333; }
+      .btn-primary { background-color: #0056b3; }
+      .btn-primary:hover { background-color: #004a99; }
+      .btn-secondary { background-color: #444; color: #eee; }
+      .btn-secondary:hover { background-color: #555; }
+    }
   </style>
 </head>
 <body>
