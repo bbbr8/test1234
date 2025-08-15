@@ -1,151 +1,184 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Account Setup</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark">
+  <title>Briefly</title>
   <style>
-    body { font-family: Arial, sans-serif; margin: 20px; }
-    form { max-width: 320px; margin: 0 auto; }
-    .form-group { margin-bottom: 12px; display: flex; flex-direction: column; }
-    label { margin-bottom: 4px; font-size: 14px; }
-    input, select { padding: 8px; font-size: 14px; }
-    table { width: 100%; border-collapse: collapse; margin-top: 12px; }
-    th, td { border: 1px solid #ccc; padding: 4px; font-size: 12px; }
-    .btn { padding: 10px 16px; font-size: 14px; border: none; border-radius: 4px; cursor: pointer; transition: background-color 0.2s ease-in-out; }
-    .btn-primary { background-color: #007bff; color: #fff; }
-    .btn-primary:hover { background-color: #0069d9; }
-    .btn-secondary { background-color: #e0e0e0; color: #333; }
-    .btn-secondary:hover { background-color: #cfcfcf; }
-    .button-group { display: flex; justify-content: flex-end; gap: 8px; }
+    :root {
+      --bg: #ffffff;
+      --fg: #222222;
+      --accent: #0069d9;
+      --radius: 4px;
+      --space: 1rem;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #121212;
+        --fg: #e0e0e0;
+      }
+    }
+    body {
+      background: var(--bg);
+      color: var(--fg);
+      font-family: sans-serif;
+      margin: 0;
+    }
+    main { padding: var(--space); }
+    section[hidden] { display: none; }
+    label { display: block; margin-bottom: 0.25rem; }
+    input, select, button {
+      font-size: 1rem;
+      padding: 0.5rem;
+      border-radius: var(--radius);
+      border: 1px solid #ccc;
+    }
+    button {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+    }
+    button.secondary {
+      background: #ccc;
+      color: #000;
+    }
+    button + button { margin-left: 0.5rem; }
+    table { width: 100%; border-collapse: collapse; margin-top: var(--space); }
+    th, td { border: 1px solid #ccc; padding: 0.25rem; text-align: left; font-size: 0.875rem; }
+    :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .card { border: 1px solid #ccc; border-radius: var(--radius); padding: var(--space); margin-bottom: var(--space); }
+    .dash-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space); }
   </style>
 </head>
 <body>
-  <section id="login">
-    <h1>Login</h1>
-    <form>
-      <div class="form-group">
+  <main>
+    <section id="login" aria-labelledby="login-heading" hidden>
+      <h2 id="login-heading">Login</h2>
+      <form>
         <label for="login-email">Email</label>
-        <input id="login-email" type="email" />
-      </div>
-      <div class="form-group">
+        <input id="login-email" type="email" autocomplete="email">
         <label for="login-password">Password</label>
-        <input id="login-password" type="password" />
-      </div>
-      <button type="button" class="btn btn-primary" onclick="showScreen('profile')">Next</button>
-    </form>
-  </section>
+        <input id="login-password" type="password" autocomplete="current-password">
+        <div>
+          <button type="button" onclick="showScreen('profile')">Next</button>
+        </div>
+      </form>
+    </section>
 
-  <section id="profile" style="display: none;">
-    <h1>Profile Setup</h1>
-    <form>
-      <div class="form-group">
+    <section id="profile" aria-labelledby="profile-heading" hidden>
+      <h2 id="profile-heading">Profile</h2>
+      <form>
         <label for="first-name">First Name</label>
-        <input id="first-name" type="text" />
-      </div>
-      <div class="form-group">
+        <input id="first-name" type="text">
         <label for="last-name">Last Name</label>
-        <input id="last-name" type="text" />
-      </div>
-      <div class="form-group">
+        <input id="last-name" type="text">
+        <label for="case-name">Case Name</label>
+        <input id="case-name" type="text">
         <label for="profile-role">Role</label>
         <select id="profile-role">
           <option value="Plaintiff">Plaintiff</option>
           <option value="Defendant">Defendant</option>
         </select>
-      </div>
-      <div class="button-group">
-        <button type="button" class="btn btn-secondary" onclick="showScreen('login')">Back</button>
-        <button type="button" class="btn btn-primary" onclick="saveProfile()">Save &amp; Continue</button>
-      </div>
-    </form>
-  </section>
+        <div>
+          <button type="button" class="secondary" onclick="showScreen('login')">Back</button>
+          <button type="button" onclick="saveProfile()">Save Profile</button>
+        </div>
+      </form>
+    </section>
 
-  <section id="account" style="display: none;">
-    <h1>Account Details</h1>
-    <form id="account-form">
-      <div class="form-group">
+    <section id="account" aria-labelledby="account-heading" hidden>
+      <h2 id="account-heading">Account</h2>
+      <form>
         <label for="case-number">Case Number</label>
-        <input id="case-number" type="text" />
-      </div>
-      <div class="form-group">
-        <label for="account-role">Role</label>
+        <input id="case-number" type="text">
+        <label for="account-role">Account Role</label>
         <select id="account-role">
           <option value="Plaintiff">Plaintiff</option>
           <option value="Defendant">Defendant</option>
         </select>
-      </div>
-      <div class="form-group">
         <label for="documents">Documents</label>
-        <input id="documents" type="file" multiple />
-      </div>
-      <table id="docs-table">
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Size (KB)</th>
-            <th>Type</th>
-            <th>Category</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-      <div class="button-group">
-        <button type="button" class="btn btn-secondary" onclick="showScreen('profile')">Back</button>
-        <button type="button" class="btn btn-primary" onclick="saveAccount()">Save &amp; Continue</button>
-      </div>
-    </form>
-  </section>
+        <input id="documents" type="file" multiple>
+        <table>
+          <thead>
+            <tr><th>Name</th><th>Size (KB)</th><th>Type</th><th>Category</th><th></th></tr>
+          </thead>
+          <tbody id="docs-body"></tbody>
+        </table>
+        <div>
+          <button type="button" class="secondary" onclick="showScreen('profile')">Back</button>
+          <button type="button" onclick="saveAccount()">Save &amp; Continue</button>
+        </div>
+      </form>
+    </section>
 
-  <section id="dashboard" style="display: none;">
-    <h1>Dashboard</h1>
-    <p>Welcome to your dashboard.</p>
-    <div class="button-group">
-      <button type="button" class="btn btn-secondary" onclick="showScreen('profile')">Back</button>
-      <button type="button" class="btn btn-primary" onclick="signOut()">Sign Out</button>
-    </div>
-  </section>
+    <section id="dashboard" aria-labelledby="dashboard-heading" hidden>
+      <header class="dash-header">
+        <h2 id="dashboard-heading">Briefly</h2>
+        <button type="button" onclick="signOut()">Sign Out</button>
+      </header>
+      <div class="card"><strong>Name:</strong> <span id="dash-name"></span></div>
+      <div class="card"><strong>Case:</strong> <span id="dash-case"></span></div>
+      <div class="card"><strong>Role:</strong> <span id="dash-role"></span></div>
+      <div class="card">
+        <h3>Case Info</h3>
+        <p><strong>Case Number:</strong> <span id="dash-case-number"></span></p>
+        <p><strong>Role:</strong> <span id="dash-account-role"></span></p>
+      </div>
+      <div class="card">
+        <h3>Documents</h3>
+        <table>
+          <thead><tr><th>Name</th><th>Size (KB)</th><th>Type</th><th>Category</th><th>Added</th></tr></thead>
+          <tbody id="dash-docs"></tbody>
+        </table>
+        <button type="button" onclick="showScreen('account')">Manage Documents</button>
+      </div>
+    </section>
+  </main>
 
   <script>
     let docs = [];
 
-    function showScreen(screen) {
-      ['login', 'profile', 'account', 'dashboard'].forEach(function (id) {
-        document.getElementById(id).style.display = id === screen ? 'block' : 'none';
-      });
-      if (screen === 'profile') {
-        loadProfile();
+    function showScreen(name) {
+      document.querySelectorAll('main > section').forEach((sec) => (sec.hidden = true));
+      const section = document.getElementById(name);
+      if (section) {
+        section.hidden = false;
+        document.title = 'Briefly - ' + name.charAt(0).toUpperCase() + name.slice(1);
+        const first = section.querySelector('input, select, textarea, button');
+        if (first) first.focus();
       }
-      if (screen === 'account') {
-        loadAccount();
-      }
+      if (name === 'profile') loadProfile();
+      if (name === 'account') loadAccount();
+      if (name === 'dashboard') loadDashboard();
     }
 
     function loadProfile() {
-      const data = JSON.parse(localStorage.getItem('briefly_profile') || '{}');
-      document.getElementById('first-name').value = data.firstName || '';
-      document.getElementById('last-name').value = data.lastName || '';
-      document.getElementById('profile-role').value = data.role || 'Plaintiff';
+      const profile = JSON.parse(localStorage.getItem('briefly:v1:profile') || '{}');
+      document.getElementById('first-name').value = profile.firstName || '';
+      document.getElementById('last-name').value = profile.lastName || '';
+      document.getElementById('case-name').value = profile.caseName || '';
+      document.getElementById('profile-role').value = profile.role || 'Plaintiff';
     }
 
     function saveProfile() {
       const profile = {
         firstName: document.getElementById('first-name').value,
         lastName: document.getElementById('last-name').value,
+        caseName: document.getElementById('case-name').value,
         role: document.getElementById('profile-role').value,
       };
-      localStorage.setItem('briefly_profile', JSON.stringify(profile));
+      localStorage.setItem('briefly:v1:profile', JSON.stringify(profile));
       showScreen('account');
     }
 
     function loadAccount() {
-      const account = JSON.parse(localStorage.getItem('briefly_account') || '{}');
-      const profile = JSON.parse(localStorage.getItem('briefly_profile') || '{}');
+      const account = JSON.parse(localStorage.getItem('briefly:v1:account') || '{}');
+      const profile = JSON.parse(localStorage.getItem('briefly:v1:profile') || '{}');
       document.getElementById('case-number').value = account.caseNumber || '';
-      document.getElementById('account-role').value =
-        account.role || profile.role || 'Plaintiff';
-      docs = JSON.parse(localStorage.getItem('briefly_docs') || '[]');
+      document.getElementById('account-role').value = account.role || profile.role || 'Plaintiff';
+      docs = JSON.parse(localStorage.getItem('briefly:v1:docs') || '[]');
       renderDocs();
     }
 
@@ -154,25 +187,24 @@
         caseNumber: document.getElementById('case-number').value,
         role: document.getElementById('account-role').value,
       };
-      localStorage.setItem('briefly_account', JSON.stringify(account));
-      localStorage.setItem('briefly_docs', JSON.stringify(docs));
+      localStorage.setItem('briefly:v1:account', JSON.stringify(account));
+      localStorage.setItem('briefly:v1:docs', JSON.stringify(docs));
       showScreen('dashboard');
     }
 
     function signOut() {
-      ['briefly_profile', 'briefly_account', 'briefly_docs'].forEach((k) =>
+      ['briefly:v1:profile', 'briefly:v1:account', 'briefly:v1:docs'].forEach((k) =>
         localStorage.removeItem(k)
       );
       docs = [];
-      renderDocs();
       showScreen('login');
     }
 
-    function handleFiles(event) {
-      const files = Array.from(event.target.files);
+    function handleFiles(e) {
+      const files = Array.from(e.target.files);
       files.forEach((file) => {
         docs.push({
-          id: Date.now().toString(36) + Math.random().toString(36).slice(2),
+          id: crypto.randomUUID(),
           name: file.name,
           size: file.size,
           type: file.type,
@@ -181,62 +213,71 @@
         });
       });
       renderDocs();
-      event.target.value = '';
+      e.target.value = '';
     }
 
     function renderDocs() {
-      const tbody = document.querySelector('#docs-table tbody');
+      const tbody = document.getElementById('docs-body');
       tbody.innerHTML = '';
       docs.forEach((doc) => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td>${doc.name}</td>
           <td>${(doc.size / 1024).toFixed(1)}</td>
-          <td>${doc.type || ''}</td>
+          <td>${doc.type}</td>
           <td>
-            <select class="doc-category" data-id="${doc.id}">
-              <option value="Case Document" ${doc.category === 'Case Document' ? 'selected' : ''}>Case Document</option>
-              <option value="Motion" ${doc.category === 'Motion' ? 'selected' : ''}>Motion</option>
-              <option value="Subpoena" ${doc.category === 'Subpoena' ? 'selected' : ''}>Subpoena</option>
-              <option value="Other" ${doc.category === 'Other' ? 'selected' : ''}>Other</option>
+            <select data-id="${doc.id}">
+              <option value="Case Document"${doc.category === 'Case Document' ? ' selected' : ''}>Case Document</option>
+              <option value="Motion"${doc.category === 'Motion' ? ' selected' : ''}>Motion</option>
+              <option value="Subpoena"${doc.category === 'Subpoena' ? ' selected' : ''}>Subpoena</option>
+              <option value="Other"${doc.category === 'Other' ? ' selected' : ''}>Other</option>
             </select>
           </td>
-          <td><button type="button" class="remove-doc" data-id="${doc.id}">Remove</button></td>
+          <td><button type="button" data-remove="${doc.id}">Remove</button></td>
         `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function loadDashboard() {
+      const profile = JSON.parse(localStorage.getItem('briefly:v1:profile') || '{}');
+      const account = JSON.parse(localStorage.getItem('briefly:v1:account') || '{}');
+      docs = JSON.parse(localStorage.getItem('briefly:v1:docs') || '[]');
+      document.getElementById('dash-name').textContent = `${profile.firstName || ''} ${profile.lastName || ''}`.trim();
+      document.getElementById('dash-case').textContent = profile.caseName || '';
+      document.getElementById('dash-role').textContent = profile.role || '';
+      document.getElementById('dash-case-number').textContent = account.caseNumber || '';
+      document.getElementById('dash-account-role').textContent = account.role || '';
+      const tbody = document.getElementById('dash-docs');
+      tbody.innerHTML = '';
+      docs.forEach((doc) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${doc.name}</td><td>${(doc.size / 1024).toFixed(1)}</td><td>${doc.type}</td><td>${doc.category}</td><td>${new Date(doc.addedAt).toLocaleString()}</td>`;
         tbody.appendChild(tr);
       });
     }
 
     document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('documents').addEventListener('change', handleFiles);
-      document
-        .querySelector('#docs-table tbody')
-        .addEventListener('change', (e) => {
-          if (e.target.classList.contains('doc-category')) {
-            const id = e.target.getAttribute('data-id');
-            const doc = docs.find((d) => d.id === id);
-            if (doc) doc.category = e.target.value;
-          }
-        });
-      document
-        .querySelector('#docs-table tbody')
-        .addEventListener('click', (e) => {
-          if (e.target.classList.contains('remove-doc')) {
-            const id = e.target.getAttribute('data-id');
-            docs = docs.filter((d) => d.id !== id);
-            renderDocs();
-          }
-        });
+      document.getElementById('docs-body').addEventListener('change', (e) => {
+        if (e.target.tagName === 'SELECT') {
+          const id = e.target.getAttribute('data-id');
+          const doc = docs.find((d) => d.id === id);
+          if (doc) doc.category = e.target.value;
+        }
+      });
+      document.getElementById('docs-body').addEventListener('click', (e) => {
+        const id = e.target.getAttribute('data-remove');
+        if (id) {
+          docs = docs.filter((d) => d.id !== id);
+          renderDocs();
+        }
+      });
 
-      const profile = localStorage.getItem('briefly_profile');
-      const account = localStorage.getItem('briefly_account');
-      if (!profile) {
-        showScreen('login');
-      } else if (!account) {
-        showScreen('account');
-      } else {
-        showScreen('dashboard');
-      }
+      const profile = localStorage.getItem('briefly:v1:profile');
+      const account = localStorage.getItem('briefly:v1:account');
+      const start = !profile ? 'login' : !account ? 'account' : 'dashboard';
+      showScreen(start);
     });
   </script>
 </body>
