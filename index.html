@@ -18,10 +18,16 @@
     .btn-secondary { background-color: #e0e0e0; color: #333; }
     .btn-secondary:hover { background-color: #cfcfcf; }
     .button-group { display: flex; justify-content: flex-end; gap: 8px; }
+    .appbar { display: flex; align-items: center; gap: 8px; margin-bottom: 20px; }
   </style>
 </head>
 <body>
-  <section id="login">
+  <header class="appbar">
+    <img src="logo.png" alt="App Logo" />
+    <h1>Account Setup</h1>
+  </header>
+  <main>
+    <section id="login">
     <h1>Login</h1>
     <form>
       <div class="form-group">
@@ -36,7 +42,7 @@
     </form>
   </section>
 
-  <section id="profile" style="display: none;">
+    <section id="profile" style="display: none;">
     <h1>Profile Setup</h1>
     <form>
       <div class="form-group">
@@ -61,7 +67,7 @@
     </form>
   </section>
 
-  <section id="account" style="display: none;">
+    <section id="account" style="display: none;">
     <h1>Account Details</h1>
     <form id="account-form">
       <div class="form-group">
@@ -98,7 +104,7 @@
     </form>
   </section>
 
-  <section id="dashboard" style="display: none;">
+    <section id="dashboard" style="display: none;">
     <h1>Dashboard</h1>
     <p>Welcome to your dashboard.</p>
     <div class="button-group">
@@ -106,6 +112,8 @@
       <button type="button" class="btn btn-primary" onclick="signOut()">Sign Out</button>
     </div>
   </section>
+
+  </main>
 
   <script>
     let docs = [];
