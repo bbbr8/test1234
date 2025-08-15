@@ -3,258 +3,336 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Account Setup</title>
+  <meta name="color-scheme" content="light dark" />
+  <title>briefly</title>
   <style>
-    body { font-family: Arial, sans-serif; margin: 20px; }
-    form { max-width: 320px; margin: 0 auto; }
-    .form-group { margin-bottom: 12px; display: flex; flex-direction: column; }
-    label { margin-bottom: 4px; font-size: 14px; }
-    input, select { padding: 8px; font-size: 14px; }
-    table { width: 100%; border-collapse: collapse; margin-top: 12px; }
-    th, td { border: 1px solid #ccc; padding: 4px; font-size: 12px; }
-    .btn { padding: 10px 16px; font-size: 14px; border: none; border-radius: 4px; cursor: pointer; transition: background-color 0.2s ease-in-out; }
-    .btn-primary { background-color: #007bff; color: #fff; }
-    .btn-primary:hover { background-color: #0069d9; }
-    .btn-secondary { background-color: #e0e0e0; color: #333; }
-    .btn-secondary:hover { background-color: #cfcfcf; }
-    .button-group { display: flex; justify-content: flex-end; gap: 8px; }
-    .appbar { display: flex; align-items: center; gap: 8px; margin-bottom: 20px; }
+    :root{
+      --bg:#f8fafc; --panel:#ffffff; --ink:#111827; --muted:#6b7280; --brand:#2563eb;
+      --border:#e5e7eb; --radius:10px; --gap:12px; --pad:20px;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--ink)}
+    .wrap{max-width:980px;margin:40px auto;padding:0 16px}
+    .appbar{display:flex;align-items:center;gap:10px;margin-bottom:16px}
+    .appbar img{height:32px;width:auto}
+    .appbar .brand{font-weight:800;font-size:18px}
+    .card{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:var(--pad);box-shadow:0 2px 10px rgba(0,0,0,.04)}
+    h1{margin:0 0 12px}
+    label{display:block;margin:14px 0 6px;font-weight:600}
+    input,select{width:100%;padding:10px;border:1px solid #d1d5db;border-radius:8px}
+    .row{display:flex;gap:var(--gap)} .row>div{flex:1}
+    .actions{display:flex;gap:var(--gap);margin-top:16px}
+    button{cursor:pointer;border:none;border-radius:8px;padding:10px 14px;background:var(--brand);color:#fff;font-weight:700}
+    button:hover{filter:brightness(.95)} .btn-ghost{background:#6b7280} .btn-ghost:hover{background:#4b5563}
+    .hidden{display:none}
+    table{width:100%;border-collapse:collapse;margin-top:12px}
+    th,td{border:1px solid var(--border);padding:8px;text-align:left}
+    .topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+    .summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:10px 0 0}
+    .summary div{background:#f3f4f6;border:1px solid var(--border);border-radius:8px;padding:10px}
+    @media (prefers-color-scheme: dark){
+      :root{--bg:#0b1220;--panel:#0f172a;--ink:#e5e7eb;--muted:#94a3b8;--border:#1f2937}
+      .summary div{background:#111827}
+    }
   </style>
 </head>
 <body>
-  <header class="appbar">
-    <img src="logo.png" alt="App Logo" />
-    <h1>Account Setup</h1>
-  </header>
-  <main>
-    <section id="login">
-    <h1>Login</h1>
-    <form>
-      <div class="form-group">
-        <label for="login-email">Email</label>
-        <input id="login-email" type="email" autocomplete="email" inputmode="email" />
-      </div>
-      <div class="form-group">
-        <label for="login-password">Password</label>
-        <input id="login-password" type="password" autocomplete="current-password" inputmode="text" />
-      </div>
-      <button type="button" class="btn btn-primary" onclick="showScreen('profile')">Next</button>
-    </form>
-  </section>
+  <div class="wrap">
+    <header class="appbar">
+      <!-- Optional logo: add logo-briefly.png to your repo root -->
+      <img src="logo-briefly.png" alt="briefly logo" onerror="this.style.display='none'"/>
+      <span class="brand">briefly</span>
+    </header>
 
-    <section id="profile" style="display: none;">
-    <h1>Profile Setup</h1>
-    <form>
-      <div class="form-group">
-        <label for="first-name">First Name</label>
-        <input id="first-name" type="text" />
-      </div>
-      <div class="form-group">
-        <label for="last-name">Last Name</label>
-        <input id="last-name" type="text" />
-      </div>
-      <div class="form-group">
-        <label for="profile-role">Role</label>
-        <select id="profile-role">
-          <option value="Plaintiff">Plaintiff</option>
-          <option value="Defendant">Defendant</option>
-        </select>
-      </div>
-      <div class="button-group">
-        <button type="button" class="btn btn-secondary" onclick="showScreen('login')">Back</button>
-        <button type="button" class="btn btn-primary" onclick="saveProfile()">Save &amp; Continue</button>
-      </div>
-    </form>
-  </section>
+    <main>
+      <!-- LOGIN -->
+      <section id="login" class="card" aria-labelledby="h-login">
+        <h1 id="h-login">Login</h1>
+        <div class="row">
+          <div>
+            <label for="loginEmail">Email</label>
+            <input id="loginEmail" type="email" autocomplete="email" autocapitalize="none" inputmode="email" />
+          </div>
+          <div>
+            <label for="loginPass">Password</label>
+            <input id="loginPass" type="password" autocomplete="current-password" />
+          </div>
+        </div>
+        <div class="actions">
+          <button id="loginNext" type="button">Next</button>
+        </div>
+      </section>
 
-    <section id="account" style="display: none;">
-    <h1>Account Details</h1>
-    <form id="account-form">
-      <div class="form-group">
-        <label for="case-number">Case Number</label>
-        <input id="case-number" type="text" />
-      </div>
-      <div class="form-group">
-        <label for="account-role">Role</label>
-        <select id="account-role">
-          <option value="Plaintiff">Plaintiff</option>
-          <option value="Defendant">Defendant</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label for="documents">Documents</label>
-        <input id="documents" type="file" multiple />
-      </div>
-      <table id="docs-table">
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Size (KB)</th>
-            <th>Type</th>
-            <th>Category</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-      <div class="button-group">
-        <button type="button" class="btn btn-secondary" onclick="showScreen('profile')">Back</button>
-        <button type="button" class="btn btn-primary" onclick="saveAccount()">Save &amp; Continue</button>
-      </div>
-    </form>
-  </section>
+      <!-- PROFILE -->
+      <section id="profile" class="card hidden" aria-labelledby="h-profile">
+        <h1 id="h-profile">Profile Setup</h1>
+        <form id="profileForm">
+          <div class="row">
+            <div>
+              <label for="firstName">First Name</label>
+              <input id="firstName" name="firstName" required />
+            </div>
+            <div>
+              <label for="lastName">Last Name</label>
+              <input id="lastName" name="lastName" required />
+            </div>
+          </div>
+          <label for="caseName">Case Name</label>
+          <input id="caseName" name="caseName" placeholder="e.g., Jones v. Suited Homes" />
 
-    <section id="dashboard" style="display: none;">
-    <h1>Dashboard</h1>
-    <p>Welcome to your dashboard.</p>
-    <div class="button-group">
-      <button type="button" class="btn btn-secondary" onclick="showScreen('profile')">Back</button>
-      <button type="button" class="btn btn-primary" onclick="signOut()">Sign Out</button>
-    </div>
-  </section>
+          <label for="role">Role</label>
+          <select id="role" name="role">
+            <option value="">— Select —</option>
+            <option value="Plaintiff">Plaintiff</option>
+            <option value="Defendant">Defendant</option>
+          </select>
 
-  </main>
+          <div class="actions">
+            <button type="button" class="btn-ghost" id="backToLogin">Back</button>
+            <button type="submit">Save Profile</button>
+          </div>
+          <p id="profileMsg" role="status" style="color:var(--muted);margin-top:8px;"></p>
+        </form>
+      </section>
+
+      <!-- ACCOUNT -->
+      <section id="account" class="card hidden" aria-labelledby="h-account">
+        <h1 id="h-account">Account Details</h1>
+        <form id="accountForm">
+          <div class="row">
+            <div>
+              <label for="caseNumber">Case Number</label>
+              <input id="caseNumber" />
+            </div>
+            <div>
+              <label for="accountRole">Role</label>
+              <select id="accountRole">
+                <option value="Plaintiff">Plaintiff</option>
+                <option value="Defendant">Defendant</option>
+              </select>
+            </div>
+          </div>
+
+          <label for="documents">Documents</label>
+          <input id="documents" type="file" multiple />
+
+          <table id="docsTable">
+            <thead>
+              <tr>
+                <th>Name</th><th>Size (KB)</th><th>Type</th><th>Category</th><th></th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+
+          <div class="actions">
+            <button type="button" class="btn-ghost" id="backToProfile">Back</button>
+            <button type="button" id="saveAccountBtn">Save &amp; Continue</button>
+          </div>
+        </form>
+      </section>
+
+      <!-- DASHBOARD -->
+      <section id="dashboard" class="card hidden" aria-labelledby="h-dashboard">
+        <div class="topbar">
+          <h1 id="h-dashboard">Briefly Dashboard</h1>
+          <button class="btn-ghost" id="signOutBtn">Sign Out</button>
+        </div>
+
+        <div class="summary">
+          <div><strong>Name</strong><div id="sumName">—</div></div>
+          <div><strong>Case</strong><div id="sumCase">—</div></div>
+          <div><strong>Role</strong><div id="sumRole">—</div></div>
+        </div>
+
+        <h2 style="margin-top:16px">Case Info</h2>
+        <p id="caseInfo">—</p>
+
+        <h2>Documents</h2>
+        <table id="docsList">
+          <thead>
+            <tr>
+              <th>Name</th><th>Size (KB)</th><th>Type</th><th>Category</th><th>Added</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+
+        <div class="actions">
+          <button type="button" id="manageDocsBtn">Manage Documents</button>
+        </div>
+
+        <p style="color:var(--muted);margin-top:12px">Next: add REPC/Budget cards with toggles.</p>
+      </section>
+    </main>
+  </div>
 
   <script>
-    let docs = [];
+    // ---------- helpers ----------
+    const K_PROFILE = "briefly:v1:profile";
+    const K_ACCOUNT = "briefly:v1:account";
+    const K_DOCS    = "briefly:v1:docs";
+    const screens = ["login","profile","account","dashboard"];
 
-      function showScreen(screen) {
-        ['login', 'profile', 'account', 'dashboard'].forEach(function (id) {
-          document.getElementById(id).style.display = id === screen ? 'block' : 'none';
-        });
-        const section = document.getElementById(screen);
-        const heading = section.querySelector('h1');
-        if (heading) {
-          document.title = heading.textContent;
-        }
-        const input = section.querySelector('input');
-        if (input) {
-          input.focus();
-        }
-        if (screen === 'profile') {
-          loadProfile();
-        }
-        if (screen === 'account') {
-          loadAccount();
-        }
-      }
+    const getJSON = (k, def=null) => { try { return JSON.parse(localStorage.getItem(k) ?? "null") ?? def; } catch { return def; } };
+    const setJSON = (k, v) => localStorage.setItem(k, JSON.stringify(v));
+    const del = (k) => localStorage.removeItem(k);
 
-    function loadProfile() {
-      const data = JSON.parse(localStorage.getItem('briefly_profile') || '{}');
-      document.getElementById('first-name').value = data.firstName || '';
-      document.getElementById('last-name').value = data.lastName || '';
-      document.getElementById('profile-role').value = data.role || 'Plaintiff';
+    function firstFocusable(el){
+      return el.querySelector('input, select, button, textarea, [tabindex]:not([tabindex="-1"])');
     }
 
-    function saveProfile() {
-      const profile = {
-        firstName: document.getElementById('first-name').value,
-        lastName: document.getElementById('last-name').value,
-        role: document.getElementById('profile-role').value,
-      };
-      localStorage.setItem('briefly_profile', JSON.stringify(profile));
-      showScreen('account');
-    }
-
-    function loadAccount() {
-      const account = JSON.parse(localStorage.getItem('briefly_account') || '{}');
-      const profile = JSON.parse(localStorage.getItem('briefly_profile') || '{}');
-      document.getElementById('case-number').value = account.caseNumber || '';
-      document.getElementById('account-role').value =
-        account.role || profile.role || 'Plaintiff';
-      docs = JSON.parse(localStorage.getItem('briefly_docs') || '[]');
-      renderDocs();
-    }
-
-    function saveAccount() {
-      const account = {
-        caseNumber: document.getElementById('case-number').value,
-        role: document.getElementById('account-role').value,
-      };
-      localStorage.setItem('briefly_account', JSON.stringify(account));
-      localStorage.setItem('briefly_docs', JSON.stringify(docs));
-      showScreen('dashboard');
-    }
-
-    function signOut() {
-      ['briefly_profile', 'briefly_account', 'briefly_docs'].forEach((k) =>
-        localStorage.removeItem(k)
-      );
-      docs = [];
-      renderDocs();
-      showScreen('login');
-    }
-
-    function handleFiles(event) {
-      const files = Array.from(event.target.files);
-      files.forEach((file) => {
-        docs.push({
-          id: Date.now().toString(36) + Math.random().toString(36).slice(2),
-          name: file.name,
-          size: file.size,
-          type: file.type,
-          category: 'Case Document',
-          addedAt: new Date().toISOString(),
-        });
+    function showScreen(name){
+      screens.forEach(id=>{
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.classList.toggle("hidden", id!==name);
       });
-      renderDocs();
-      event.target.value = '';
+      document.title = `briefly — ${name}`;
+      const focusTarget = firstFocusable(document.getElementById(name));
+      focusTarget && focusTarget.focus({preventScroll:true});
+      location.hash = `#${name}`;
     }
 
-    function renderDocs() {
-      const tbody = document.querySelector('#docs-table tbody');
-      tbody.innerHTML = '';
-      docs.forEach((doc) => {
-        const tr = document.createElement('tr');
+    function renderDashboard(){
+      const p = getJSON(K_PROFILE, {});
+      const a = getJSON(K_ACCOUNT, {});
+      document.getElementById("sumName").textContent = [p.firstName, p.lastName].filter(Boolean).join(" ") || "—";
+      document.getElementById("sumCase").textContent = p.caseName || "—";
+      document.getElementById("sumRole").textContent = p.role || "—";
+      document.getElementById("caseInfo").textContent =
+        a.caseNumber ? `Case #${a.caseNumber} — ${a.role || "—"}` : "—";
+
+      // docs table on dashboard
+      const docs = getJSON(K_DOCS, []);
+      const tbody = document.querySelector("#docsList tbody");
+      tbody.innerHTML = "";
+      docs.forEach(d=>{
+        const tr = document.createElement("tr");
+        const added = new Date(d.addedAt||Date.now()).toLocaleString();
         tr.innerHTML = `
-          <td>${doc.name}</td>
-          <td>${(doc.size / 1024).toFixed(1)}</td>
-          <td>${doc.type || ''}</td>
-          <td>
-            <select class="doc-category" data-id="${doc.id}">
-              <option value="Case Document" ${doc.category === 'Case Document' ? 'selected' : ''}>Case Document</option>
-              <option value="Motion" ${doc.category === 'Motion' ? 'selected' : ''}>Motion</option>
-              <option value="Subpoena" ${doc.category === 'Subpoena' ? 'selected' : ''}>Subpoena</option>
-              <option value="Other" ${doc.category === 'Other' ? 'selected' : ''}>Other</option>
-            </select>
-          </td>
-          <td><button type="button" class="remove-doc" data-id="${doc.id}">Remove</button></td>
+          <td>${d.name}</td>
+          <td>${Math.max(1, Math.round((d.size||0)/1024))}</td>
+          <td>${d.type || "—"}</td>
+          <td>${d.category || "Case Document"}</td>
+          <td>${added}</td>
         `;
         tbody.appendChild(tr);
       });
     }
 
-    document.addEventListener('DOMContentLoaded', () => {
-      document.getElementById('documents').addEventListener('change', handleFiles);
-      document
-        .querySelector('#docs-table tbody')
-        .addEventListener('change', (e) => {
-          if (e.target.classList.contains('doc-category')) {
-            const id = e.target.getAttribute('data-id');
-            const doc = docs.find((d) => d.id === id);
-            if (doc) doc.category = e.target.value;
-          }
-        });
-      document
-        .querySelector('#docs-table tbody')
-        .addEventListener('click', (e) => {
-          if (e.target.classList.contains('remove-doc')) {
-            const id = e.target.getAttribute('data-id');
-            docs = docs.filter((d) => d.id !== id);
-            renderDocs();
-          }
-        });
+    // ---------- login/profile wiring ----------
+    document.getElementById("loginNext").addEventListener("click", ()=> showScreen("profile"));
+    document.getElementById("backToLogin").addEventListener("click", ()=> showScreen("login"));
 
-      const profile = localStorage.getItem('briefly_profile');
-      const account = localStorage.getItem('briefly_account');
-      if (!profile) {
-        showScreen('login');
-      } else if (!account) {
-        showScreen('account');
-      } else {
-        showScreen('dashboard');
+    document.getElementById("profileForm").addEventListener("submit",(e)=>{
+      e.preventDefault();
+      const data = Object.fromEntries(new FormData(e.target).entries());
+      setJSON(K_PROFILE, data);
+      document.getElementById("profileMsg").textContent = "Profile saved.";
+      // prefill account role
+      const accRole = document.getElementById("accountRole");
+      if (accRole && data.role) accRole.value = data.role;
+      showScreen("account");
+    });
+
+    // ---------- account + docs ----------
+    let docs = getJSON(K_DOCS, []);
+    const docsInput = document.getElementById("documents");
+    const docsTableBody = document.querySelector("#docsTable tbody");
+
+    function renderDocsTable(){
+      docsTableBody.innerHTML = "";
+      docs.forEach((d,i)=>{
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${d.name}</td>
+          <td>${Math.max(1,Math.round(d.size/1024))}</td>
+          <td>${d.type || "—"}</td>
+          <td>
+            <select data-idx="${i}">
+              <option ${d.category==="Case Document"?"selected":""}>Case Document</option>
+              <option ${d.category==="Motion"?"selected":""}>Motion</option>
+              <option ${d.category==="Subpoena"?"selected":""}>Subpoena</option>
+              <option ${d.category==="Other"?"selected":""}>Other</option>
+            </select>
+          </td>
+          <td><button type="button" data-rm="${i}">Remove</button></td>
+        `;
+        docsTableBody.appendChild(tr);
+      });
+    }
+
+    docsInput.addEventListener("change",(e)=>{
+      const files = Array.from(e.target.files || []);
+      files.forEach(f=>{
+        docs.push({
+          id: (crypto?.randomUUID?.() || String(Date.now()+Math.random())),
+          name: f.name, size: f.size, type: f.type,
+          category: "Case Document", addedAt: Date.now()
+        });
+      });
+      setJSON(K_DOCS, docs);
+      renderDocsTable();
+      docsInput.value = "";
+    });
+
+    document.getElementById("docsTable").addEventListener("change",(e)=>{
+      if (e.target.tagName!=="SELECT") return;
+      const i = Number(e.target.dataset.idx);
+      if (!Number.isNaN(i) && docs[i]) {
+        docs[i].category = e.target.value;
+        setJSON(K_DOCS, docs);
       }
     });
+
+    document.getElementById("docsTable").addEventListener("click",(e)=>{
+      if (!e.target.dataset.rm) return;
+      const i = Number(e.target.dataset.rm);
+      docs.splice(i,1);
+      setJSON(K_DOCS, docs);
+      renderDocsTable();
+    });
+
+    document.getElementById("backToProfile").addEventListener("click", ()=> showScreen("profile"));
+
+    document.getElementById("saveAccountBtn").addEventListener("click", ()=>{
+      const caseNumber = document.getElementById("caseNumber").value.trim();
+      const role = document.getElementById("accountRole").value;
+      setJSON(K_ACCOUNT, { caseNumber, role });
+      setJSON(K_DOCS, docs); // ensure persisted
+      showScreen("dashboard");
+      renderDashboard();
+    });
+
+    // ---------- dashboard wiring ----------
+    document.getElementById("signOutBtn").addEventListener("click", ()=>{
+      [K_PROFILE, K_ACCOUNT, K_DOCS].forEach(del);
+      docs = [];
+      showScreen("login");
+    });
+    document.getElementById("manageDocsBtn").addEventListener("click", ()=> showScreen("account"));
+
+    // ---------- initial route ----------
+    (function init(){
+      // set account role default from profile if exists
+      const p = getJSON(K_PROFILE);
+      if (p?.role) { const r = document.getElementById("accountRole"); if (r) r.value = p.role; }
+      docs = getJSON(K_DOCS, []);
+      renderDocsTable();
+
+      const hasProfile = !!getJSON(K_PROFILE);
+      const hasAccount = !!getJSON(K_ACCOUNT);
+      if (!hasProfile) showScreen("login");
+      else if (!hasAccount) showScreen("account");
+      else { showScreen("dashboard"); renderDashboard(); }
+
+      // hash navigation (optional)
+      window.addEventListener("hashchange", ()=>{
+        const key = location.hash.replace("#","");
+        if (screens.includes(key)) showScreen(key);
+      });
+    })();
   </script>
 </body>
 </html>
